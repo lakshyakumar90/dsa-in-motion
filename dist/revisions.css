@@ -1180,3 +1180,6 @@ body.light .hljs-built_in {
     font-size: 12px;
   }
 }
+
+.problem-player:not(.is-compact){display:flex;flex-direction:column}.problem-player:not(.is-compact)>.player-heading{order:0}.problem-player:not(.is-compact)>.trace-controls{order:1;border-top:0;border-bottom:1px solid var(--line)}.problem-player:not(.is-compact)>.trace-layout{order:2}.problem-player:not(.is-compact)>.trace-legend{order:3}.problem-player:not(.is-compact)>.trace-inputs{order:4}
+
