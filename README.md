@@ -41,3 +41,6 @@ The source sheet's “Second Largest” row links to a digit-string problem. Thi
 ## Client dependencies
 
 Offline syntax highlighting uses highlight.js (BSD-3-Clause); see `dist/highlight-LICENSE.txt`. Formatters and bundling tools are authoring-only; the published app needs no package installation.
+
+Live site: https://lakshyakumar90.github.io/dsa-in-motion/
+
