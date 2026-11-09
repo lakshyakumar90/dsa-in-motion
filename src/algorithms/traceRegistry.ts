@@ -214,7 +214,8 @@ function removeDuplicatesOptimalTrace(input: Record<string, unknown>): Generated
 
   const output = { length: slow + 1, prefix: working.slice(0, slow + 1) };
   frames.push({
-    title: `Return ${slow + 1}`,`r`n    message: `Return slow + 1 = ${slow + 1}. The first ${slow + 1} positions of nums now contain the unique values.`,
+    title: `Return ${slow + 1}`,
+    message: `Return slow + 1 = ${slow + 1}. The first ${slow + 1} positions of nums now contain the unique values.`,
     arrays: [source({ slow }), prefix(slow)],
     vars: { slow, result: slow + 1 },
     output,
