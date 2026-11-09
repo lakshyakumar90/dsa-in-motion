@@ -392,8 +392,15 @@
         }).value
       : esc(code);
   }
+  // Keep the explanation in the copied snippet as well as the code viewer.
+  function annotatedCode(solution) {
+    const marker = lang === "python" ? "#" : "//";
+    const lines = [solution.idea, ...(solution.steps || []), `Time: ${solution.time}; space: ${solution.space}`].filter(Boolean);
+    return lines.map((line, i) => `${marker} ${i > 0 && i < lines.length - 1 ? i + ". " : ""}${String(line).replace(/[\r\n]+/g, " ")}`).join("\n") + "\n\n" + solution[lang].trimEnd();
+  }
   function renderCode(solution) {
-    const code = solution[lang].trimEnd();
+    if (!solution || !solution[lang]) return;
+    const code = annotatedCode(solution);
     $("#solution-code").innerHTML = codeMarkup(code);
     $("#code-gutter").innerHTML = code
       .split("\n")
@@ -428,24 +435,81 @@
       exact = true,
       lab = null;
     document.title = `${q.name} — DSA in Motion`;
-    $("#main").innerHTML =
-      `<div class="study">${sidebar(q.ti, q.id)}<article class="lesson"><div class="breadcrumbs"><a href="#questions">Question sheet</a> / <a href="#topic/${q.ti}">${t.title}</a> / ${q.qi + 1}</div><span class="difficulty ${q.level}">${q.level}</span><h1>${esc(q.name)}</h1>${s?.statement ? `<p class="lead">${esc(s.statement)}</p>` : ""}<div class="practice-actions"><button id="understood" class="${progress[id] ? "done" : ""}">${progress[id] ? "✓ Understood" : "Mark understood"}</button><button id="bookmark-question">${bookmarks[id] ? "★ Bookmarked" : "☆ Bookmark"}</button><a class="textlink" href="${esc(q.leetcode)}" target="_blank" rel="noopener">Open source problem ↗</a></div>${s ? `<h2>The idea</h2><p>${esc(s.idea)}</p>${s.example ? `<div class="insight"><b>Example</b>${esc(s.example)}</div>` : ""}<h2>Work through the solution</h2><ol>${s.steps.map((x) => `<li>${esc(x)}</li>`).join("")}</ol><div class="complexities"><span>Time <b>${esc(s.time)}</b></span><span>Extra space <b>${esc(s.space)}</b></span></div>` : '<p class="empty">Solution content could not load. Reload the page to try again.</p>'}<div class="lesson-jumps" aria-label="On this page"><button data-jump="question-animation">Animation</button><button data-jump="question-code">Code</button><button data-jump="question-notes">Your notes</button></div><h2 id="question-animation">Watch this solution unfold</h2><p>Follow the actual algorithm for this question. Each step shows the operation, the data it changes, and the variables that explain why.</p><div id="question-lab"></div>${
-        s
-          ? `<h2 id="question-code">The implementation</h2><p>Switch languages to compare the same approach. Copy the function into your practice environment.</p>${/Linked List|Binary Tree|Binary Search Tree|Graphs/.test(t.title) ? "<p><small>ListNode, TreeNode, and graph Node types follow the standard judge definitions where referenced. C++ snippets use the standard library; include the relevant headers and using namespace std. Python annotations use the usual typing imports.</small></p>" : ""}${q.name === "Second Largest" ? '<div class="insight"><b>Source-link discrepancy</b>The sheet names an array question but links to “Second Largest Digit in a String”. This solution follows the linked problem and finds the second-largest distinct digit in an alphanumeric string. The row title alone is ambiguous.</div>' : ""}<div class="codebox"><div class="codebar"><div class="language-tabs" role="tablist" aria-label="Solution language">${[
-              ["cpp", "C++"],
-              ["js", "JavaScript"],
-              ["python", "Python"],
-            ]
-              .map(
-                ([k, v]) =>
-                  `<button role="tab" data-lang="${k}" aria-controls="code-panel" aria-selected="${k === lang}" class="${k === lang ? "active" : ""}">${v}</button>`,
-              )
-              .join(
-                "",
-              )}</div><div class="code-tools"><button id="wrap-code" aria-pressed="false">Wrap</button><button class="copy" id="copy-code">Copy code</button></div></div><div class="code-filebar"><span id="code-file"></span><small id="code-lines"></small></div><div class="code-scroll" id="code-panel" role="tabpanel" tabindex="0" aria-label="Formatted solution"><div id="code-gutter" class="code-gutter" aria-hidden="true"></div><pre><code id="solution-code"></code></pre></div><div class="code-environment" id="code-environment"></div></div>`
-          : ""
-      }<h2 id="question-notes">Your notes</h2><p>Write the clue you want to recognize next time. Saved only on this browser.</p><textarea class="notes" aria-label="Personal notes" placeholder="What made this problem click?">${esc(notes[id] ?? "")}</textarea><div class="source-panel" style="margin-top:30px">Listed in the <a href="https://namastedev.com/namaste-dsa-sheet" target="_blank" rel="noopener">Namaste DSA Sheet ↗</a>. <a href="${esc(q.blog)}" target="_blank" rel="noopener">Source editorial ↗</a> · <a href="${esc(q.video)}" target="_blank" rel="noopener">Source video ↗</a><br>Companies listed by the source: ${q.companies.map(esc).join(", ")}. Independent educational companion; not an official question bank.</div><div class="end-nav"><a href="#topic/${q.ti}">← ${t.title}</a>${questions[questions.indexOf(q) + 1] ? `<a href="#question/${questions[questions.indexOf(q) + 1].id}">Next question →</a>` : '<a href="#questions">Back to sheet →</a>'}</div></article></div>`;
-    labs.push(new ProblemPlayer($("#question-lab"), q.name));
+
+    const approaches =
+      s && s.approaches && s.approaches.length ? s.approaches : s ? [s] : [];
+    let currentApproachIdx = 0;
+
+    function sliderCard(a, i) {
+      const typeLabel =
+        a.type === "brute" ? "Brute Force" : a.type === "better" ? "Better" : "Optimal";
+      const prosList = a.pros && a.pros.length ? a.pros : ["Intuitive logic", "Clear baseline"];
+      const consList = a.cons && a.cons.length ? a.cons : ["Improves with better structure"];
+      return `<article class="approach-slide approach-option" data-slide="${i}">
+        <div class="approach-detail-header">
+          <div class="approach-title-row"><span class="approach-type-pill ${a.type || "optimal"}">${typeLabel}</span><h3 class="approach-headline">${esc(a.name)}</h3></div>
+          <div class="complexities-pill-group"><span class="complexity-badge time"><span class="badge-label">Time:</span> <b>${esc(a.time)}</b></span><span class="complexity-badge space"><span class="badge-label">Space:</span> <b>${esc(a.space)}</b></span></div>
+        </div>
+        <p class="approach-idea-text">${esc(a.idea)}</p>
+        <div class="approach-accordion">
+          <details class="acc" open><summary>Steps & walkthrough <span class="acc-count">${a.steps.length} steps</span></summary><ol class="approach-step-list">${a.steps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>${a.example || s.example ? `<div class="insight"><b>Walkthrough Example</b>${esc(a.example || s.example)}</div>` : ""}</details>
+          <details class="acc"><summary>Pros & cons</summary><div class="pros-cons-grid"><div class="pro-con-box pros-box"><div class="pro-con-head"><span class="pro-con-icon">✓</span><b>Advantages</b></div><ul>${prosList.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div><div class="pro-con-box cons-box"><div class="pro-con-head"><span class="pro-con-icon">✕</span><b>Trade-offs</b></div><ul>${consList.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div></div>${a.timeExplanation ? `<p class="acc-note"><b>Time why:</b> ${esc(a.timeExplanation)}</p>` : ""}${a.spaceExplanation ? `<p class="acc-note"><b>Space why:</b> ${esc(a.spaceExplanation)}</p>` : ""}</details>
+          <details class="acc"><summary>When to use vs others</summary><p class="acc-note">${a.type === "brute" ? "Use for correctness, tiny inputs, or as an interview starting point." : a.type === "better" ? "Use when brute force is too slow but you still want a clean mental model." : "Use for final submission / production: best asymptotic guarantee."} Compare Time ${esc(a.time)} / Space ${esc(a.space)} against siblings in the slider.</p></details>
+        </div>
+        <button class="slide-watch" data-watch="${i}">▶ Watch this approach animate</button>
+      </article>`;
+    }
+
+    $("#main").innerHTML = `<div class="study">${sidebar(q.ti, q.id)}<article class="lesson"><div class="breadcrumbs"><a href="#questions">Question sheet</a> / <a href="#topic/${q.ti}">${t.title}</a> / ${q.qi + 1}</div><span class="difficulty ${q.level}">${q.level}</span><h1>${esc(q.name)}</h1>${s?.statement ? `<p class="lead">${esc(s.statement)}</p>` : ""}<div class="practice-actions"><button id="understood" class="${progress[id] ? "done" : ""}">${progress[id] ? "✓ Understood" : "Mark understood"}</button><button id="bookmark-question">${bookmarks[id] ? "★ Bookmarked" : "☆ Bookmark"}</button><a class="textlink" href="${esc(q.leetcode)}" target="_blank" rel="noopener">Open source problem ↗</a></div><div class="lesson-jumps" aria-label="On this page"><button data-jump="question-approaches">Approaches (${approaches.length})</button><button data-jump="question-animation">Animation</button><button data-jump="question-code">Code</button><button data-jump="question-notes">Your notes</button></div>${
+      s
+        ? `<section id="question-approaches" class="approaches-section" aria-label="Solution Approaches"><div class="approaches-header"><div class="approaches-title-group"><h2>Solution Approaches</h2><span class="approaches-badge">${approaches.length} approaches</span></div><p class="approaches-intro">Choose one approach to view its steps. The animation and code follow your selection.</p></div><label class="approach-select-label" for="approach-select">Choose an approach</label><select id="approach-select" class="approach-select">${approaches.map((a,i) => `<option value="${i}">${a.type === "brute" ? "Brute Force" : a.type === "better" ? "Better" : "Optimal"} — ${esc(a.name)}</option>`).join("")}</select><div class="approach-options">${sliderCard(approaches[0],0)}</div></section>`
+        : '<p class="empty">Solution content could not load. Reload the page to try again.</p>'
+    }<h2 id="question-animation">Watch this approach unfold</h2><p id="animation-caption">The animation below follows the selected approach. Open an approach above to update the walkthrough and code together.</p><div class="anim-approach-banner"><span>Now animating:</span><b id="anim-approach-name">${esc(approaches[0]?.name || "")}</b><span id="anim-complexity" class="anim-complexity"></span></div><div id="question-lab"></div>${
+      s
+        ? `<h2 id="question-code">The implementation</h2><p>Switch languages to compare the same approach. Copy the function into your practice environment.</p><div class="code-approach-banner"><span class="banner-label">Active Approach:</span><b id="code-approach-name">${esc(approaches[0]?.name || s.name)}</b>${approaches.length > 1 ? `<span class="code-approach-quick-nav">${approaches.map((ap, i) => `<button class="code-quick-tab ${i === 0 ? "active" : ""}" data-code-approach="${i}" title="${esc(ap.name)}">${ap.type === "brute" ? "Brute Force" : ap.type === "better" ? "Better" : "Optimal"}</button>`).join("")}</span>` : ""}</div>${/Linked List|Binary Tree|Binary Search Tree|Graphs/.test(t.title) ? "<p><small>ListNode, TreeNode, and graph Node types follow the standard judge definitions where referenced. C++ snippets use the standard library; include the relevant headers and using namespace std. Python annotations use the usual typing imports.</small></p>" : ""}${q.name === "Second Largest" ? '<div class="insight"><b>Source-link discrepancy</b>The sheet names an array question but links to “Second Largest Digit in a String”. This solution follows the linked problem and finds the second-largest distinct digit in an alphanumeric string. The row title alone is ambiguous.</div>' : ""}<div class="codebox"><div class="codebar"><div class="language-tabs" role="tablist" aria-label="Solution language">${[
+            ["cpp", "C++"],
+            ["js", "JavaScript"],
+            ["python", "Python"],
+          ]
+            .map(
+              ([k, v]) =>
+                `<button role="tab" data-lang="${k}" aria-controls="code-panel" aria-selected="${k === lang}" class="${k === lang ? "active" : ""}">${v}</button>`,
+            )
+            .join(
+              "",
+            )}</div><div class="code-tools"><button id="wrap-code" aria-pressed="false">Wrap</button><button class="copy" id="copy-code">Copy code</button></div></div><div class="code-filebar"><span id="code-file"></span><small id="code-lines"></small></div><div class="code-scroll" id="code-panel" role="tabpanel" tabindex="0" aria-label="Formatted solution"><div id="code-gutter" class="code-gutter" aria-hidden="true"></div><pre><code id="solution-code"></code></pre></div><div class="code-environment" id="code-environment"></div></div>`
+        : ""
+    }<h2 id="question-notes">Your notes</h2><p>Write the clue you want to recognize next time. Saved only on this browser.</p><textarea class="notes" aria-label="Personal notes" placeholder="What made this problem click?">${esc(notes[id] ?? "")}</textarea><div class="source-panel" style="margin-top:30px">Listed in the <a href="https://namastedev.com/namaste-dsa-sheet" target="_blank" rel="noopener">Namaste DSA Sheet ↗</a>. <a href="${esc(q.blog)}" target="_blank" rel="noopener">Source editorial ↗</a> · <a href="${esc(q.video)}" target="_blank" rel="noopener">Source video ↗</a><br>Companies listed by the source: ${q.companies.map(esc).join(", ")}. Independent educational companion; not an official question bank.</div><div class="end-nav"><a href="#topic/${q.ti}">← ${t.title}</a>${questions[questions.indexOf(q) + 1] ? `<a href="#question/${questions[questions.indexOf(q) + 1].id}">Next question →</a>` : '<a href="#questions">Back to sheet →</a>'}</div></article></div>`;
+
+    let _player = null;
+    function updateApproachView(idx, opts) {
+      opts = opts || {};
+      if (!approaches.length) return;
+      currentApproachIdx = Math.max(0, Math.min(idx, approaches.length - 1));
+      const a = approaches[currentApproachIdx];
+      document.querySelectorAll(".slider-dot").forEach(function(d, i) {
+        const on = i === currentApproachIdx;
+        d.classList.toggle("active", on);
+        d.setAttribute("aria-selected", on);
+      });
+      const selector = document.querySelector("#approach-select");
+      if (selector) selector.value = String(currentApproachIdx);
+      const detail = document.querySelector(".approach-options");
+      if (detail) detail.innerHTML = sliderCard(a, currentApproachIdx);
+      document.querySelectorAll(".code-quick-tab").forEach(function(b, i) { b.classList.toggle("active", i === currentApproachIdx); });
+      const slider = document.querySelector(".approach-slider");
+      if (slider && !opts.noScroll) {
+        const slide = slider.querySelector('[data-slide="' + currentApproachIdx + '"]');
+        if (slide) slide.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
+      }
+      if (document.querySelector("#code-approach-name")) document.querySelector("#code-approach-name").textContent = a.name;
+      if (document.querySelector("#anim-approach-name")) document.querySelector("#anim-approach-name").textContent = a.name;
+      if (document.querySelector("#anim-complexity")) document.querySelector("#anim-complexity").textContent = a.time + " time | " + a.space + " space";
+      if (_player && _player.setApproach) _player.setApproach(currentApproachIdx);
+      renderCode(a);
+    }
+
+    _player = new ProblemPlayer($("#question-lab"), q.name, false, { approaches: approaches, approachIndex: 0 }); labs.push(_player);
     initSidebar();
     document.querySelectorAll("[data-jump]").forEach(
       (b) =>
@@ -477,11 +541,65 @@
       notes[id] = e.target.value;
       save("dsa-motion-notes", notes);
     };
-    renderCode(s);
+
+    document.querySelectorAll(".slider-dot").forEach(function(dot) {
+      dot.onclick = function() { updateApproachView(+dot.dataset.approachIdx); };
+      dot.onkeydown = function(e) {
+        if (["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) {
+          e.preventDefault();
+          const n = currentApproachIdx;
+          const ni = e.key === "Home" ? 0 : e.key === "End" ? approaches.length-1 : (n + (e.key==="ArrowRight"?1:approaches.length-1)) % approaches.length;
+          updateApproachView(ni);
+          const tgt = document.querySelector('[data-approach-idx="' + ni + '"]');
+          if (tgt) tgt.focus();
+        }
+      };
+    });
+    const sliderEl = document.querySelector(".approach-slider");
+    if (sliderEl) {
+      sliderEl.addEventListener("scroll", function() {
+        let best = 0, bd = 1e18;
+        sliderEl.querySelectorAll(".approach-slide").forEach(function(sl, i) {
+          const d = Math.abs(sl.offsetLeft - sliderEl.scrollLeft);
+          if (d < bd) { bd = d; best = i; }
+        });
+        if (best !== currentApproachIdx) updateApproachView(best, { noScroll: true });
+      }, { passive: true });
+      sliderEl.onkeydown = function(e) {
+        if (["ArrowLeft","ArrowRight"].includes(e.key)) {
+          e.preventDefault();
+          updateApproachView(currentApproachIdx + (e.key === "ArrowRight" ? 1 : -1));
+        }
+      };
+      const prevBtn = document.querySelector(".slider-btn.prev");
+      if (prevBtn) prevBtn.addEventListener("click", function() { updateApproachView(currentApproachIdx - 1); });
+      const nextBtn = document.querySelector(".slider-btn.next");
+      if (nextBtn) nextBtn.addEventListener("click", function() { updateApproachView(currentApproachIdx + 1); });
+    }
+    const approachSelect = document.querySelector("#approach-select");
+    if (approachSelect) approachSelect.addEventListener("change", () => updateApproachView(+approachSelect.value, { noScroll: true }));
+    document.querySelector(".approach-options")?.addEventListener("click", function(event) {
+      const button = event.target.closest("[data-watch]");
+      if (!button) return;
+      updateApproachView(+button.dataset.watch, { noScroll: true });
+      document.getElementById("question-animation")?.scrollIntoView({ behavior: "smooth" });
+      if (_player) _player.go(0);
+    });
+
+    document.querySelectorAll(".code-quick-tab").forEach((btn) => {
+      btn.onclick = () => {
+        updateApproachView(+btn.dataset.codeApproach);
+      };
+    });
+
+    if (s) {
+      updateApproachView(0);
+    }
+
     document.querySelectorAll("[data-lang]").forEach((b) => {
       b.onclick = () => {
         lang = b.dataset.lang;
-        renderCode(s);
+        renderCode(approaches[currentApproachIdx] || s);
       };
       b.onkeydown = (e) => {
         if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
@@ -496,7 +614,7 @@
                   ? 2
                   : (n + (e.key === "ArrowRight" ? 1 : 2)) % 3
             ];
-          renderCode(s);
+          renderCode(approaches[currentApproachIdx] || s);
           document.querySelector('[data-lang="' + lang + '"]').focus();
         }
       };
@@ -507,7 +625,8 @@
     };
     $("#copy-code")?.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(s[lang]);
+        const cur = approaches[currentApproachIdx] || s;
+        await navigator.clipboard.writeText(annotatedCode(cur));
         toast("Code copied");
       } catch {
         toast("Select the code and copy it with your keyboard.");

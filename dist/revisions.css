@@ -1183,3 +1183,406 @@ body.light .hljs-built_in {
 
 .problem-player:not(.is-compact){display:flex;flex-direction:column}.problem-player:not(.is-compact)>.player-heading{order:0}.problem-player:not(.is-compact)>.trace-controls{order:1;border-top:0;border-bottom:1px solid var(--line)}.problem-player:not(.is-compact)>.trace-layout{order:2}.problem-player:not(.is-compact)>.trace-legend{order:3}.problem-player:not(.is-compact)>.trace-inputs{order:4}
 
+/* Multi-Approach Navigation, Pros & Cons, and Solution Architecture */
+.approaches-section {
+  margin: 32px 0 24px;
+}
+.approaches-header {
+  margin-bottom: 16px;
+}
+.approaches-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.approaches-title-group h2 {
+  margin: 0;
+  font-size: clamp(22px, 2.5vw, 28px);
+}
+.approaches-badge {
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.approaches-intro {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.approach-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin: 18px 0 16px;
+  scrollbar-width: thin;
+}
+.approach-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.approach-tab:hover {
+  background: var(--panel2);
+  border-color: var(--accent);
+}
+.approach-tab.active {
+  background: var(--panel2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.approach-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.approach-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.approach-tag.brute {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.approach-tag.better {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+.approach-tag.optimal {
+  color: var(--green);
+  background: rgba(146, 213, 175, 0.12);
+  border: 1px solid rgba(146, 213, 175, 0.35);
+}
+.approach-tab-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.approach-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.approach-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+.approach-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.approach-type-pill {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 9px;
+  border-radius: 5px;
+}
+.approach-type-pill.brute {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.approach-type-pill.better {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.approach-type-pill.optimal {
+  color: var(--green);
+  background: rgba(146, 213, 175, 0.14);
+  border: 1px solid rgba(146, 213, 175, 0.4);
+}
+.approach-headline {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.complexities-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.complexity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.complexity-badge .badge-label {
+  color: var(--muted);
+  font-size: 11px;
+}
+.complexity-badge b {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.approach-section-block {
+  margin-bottom: 22px;
+}
+.approach-section-block h4.subhead {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.approach-idea-text {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  margin: 0;
+  max-width: 80ch;
+}
+.approach-step-list {
+  padding-left: 22px;
+  margin: 0;
+  line-height: 1.7;
+  color: var(--ink);
+  font-size: 14px;
+}
+.approach-step-list li {
+  margin-bottom: 7px;
+}
+
+.pros-cons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+@media (max-width: 720px) {
+  .pros-cons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.pro-con-box {
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.pros-box {
+  background: rgba(146, 213, 175, 0.06);
+  border: 1px solid rgba(146, 213, 175, 0.22);
+}
+.cons-box {
+  background: rgba(233, 147, 147, 0.06);
+  border: 1px solid rgba(233, 147, 147, 0.22);
+}
+.pro-con-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.pros-box .pro-con-head {
+  color: var(--green);
+}
+.cons-box .pro-con-head {
+  color: var(--red);
+}
+.pro-con-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.pro-con-box ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.pro-con-box li {
+  margin-bottom: 5px;
+}
+
+.code-approach-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 11px 16px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 20px 0 12px;
+  font-size: 13px;
+}
+.code-approach-banner .banner-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+.code-approach-banner b {
+  color: var(--ink);
+}
+.code-approach-quick-nav {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.code-quick-tab {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.code-quick-tab:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.code-quick-tab.active {
+  background: var(--accent);
+  color: #0c1210;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* Approach slider + accordion + enriched animation */
+.approach-sliderwrap{display:flex;align-items:stretch;gap:8px;margin:14px 0 10px}
+.slider-btn{flex:0 0 auto;width:36px;border:1px solid var(--line);background:var(--panel);border-radius:8px;font-size:22px;line-height:1;color:var(--ink);cursor:pointer}
+.slider-btn:hover{border-color:var(--accent);color:var(--accent)}
+.approach-slider{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;flex:1;scrollbar-width:thin}
+.approach-slide{scroll-snap-align:center;flex:0 0 min(92%,720px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;opacity:.72;transition:opacity .18s,border-color .18s,box-shadow .18s}
+.approach-slide.is-active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.slider-dots{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}
+.slider-dot{border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:999px;cursor:pointer}
+.slider-dot.active{border-color:var(--accent);background:var(--panel2)}
+.approach-accordion{margin-top:14px;border-top:1px solid var(--line)}
+.approach-accordion .acc{border-bottom:1px solid var(--line)}
+.approach-accordion .acc>summary{padding:12px 4px;font-size:13px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.approach-accordion .acc>summary::-webkit-details-marker{display:none}
+.approach-accordion .acc>summary::after{content:"▾";color:var(--muted)}
+.approach-accordion .acc[open]>summary::after{content:"▴"}
+.acc-count{font:10px var(--mono);color:var(--muted);border:1px solid var(--line);padding:2px 8px;border-radius:999px}
+.acc-note{font-size:13px;line-height:1.65;color:var(--ink);margin:10px 0 4px}
+.slide-watch{margin-top:14px;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--panel2);color:var(--accent);font-weight:700;cursor:pointer;font-size:13px}
+.slide-watch:hover{background:var(--accent);color:#0c1210}
+.anim-approach-banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:10px 14px;margin:12px 0 4px;font-size:13px}
+.anim-approach-banner span{color:var(--muted);font-size:12px}
+.anim-complexity{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--accent)}
+.player-approach{font:10px var(--mono);padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.player-approach[data-type="brute"]{color:#f59e0b;border-color:rgba(245,158,11,.5)}
+.player-approach[data-type="better"]{color:#38bdf8;border-color:rgba(56,189,248,.5)}
+.player-approach[data-type="optimal"]{color:var(--green);border-color:rgba(146,213,175,.5)}
+.trace-deepdive{margin:6px 0 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:10px 12px;display:grid;gap:8px}
+.trace-deepdive[hidden]{display:none}
+.deep-row{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start}
+.deep-row>span{font:10px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.deep-row p{margin:0;font-size:12px;line-height:1.6;color:var(--ink)}
+@media(max-width:800px){
+  .approach-slide{flex-basis:92%;padding:16px}
+  .slider-btn{display:none}
+  .deep-row{grid-template-columns:1fr;gap:2px}
+}
+@media(prefers-reduced-motion:reduce){.approach-slide{transition:none}}
+
+
+
+/* Approach selection is an accordion; each summary selects its own trace. */
+.approach-options { display: grid; gap: 12px; }
+.approach-option { min-width: 0; width: 100%; border: 1px solid var(--border, #ddd); border-radius: 12px; overflow: hidden; }
+.approach-option-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 16px; cursor: pointer; list-style: none; }
+.approach-option-summary::-webkit-details-marker { display: none; }
+.approach-option-summary::after { content: '+'; margin-left: auto; font-size: 1.4rem; }
+.approach-option[open] > .approach-option-summary::after { content: '−'; }
+.approach-option-cost { font-size: .85rem; opacity: .75; }
+.approach-option-body { padding: 0 16px 18px; }
+.trace-coach { border: 1px solid #ad739a; border-radius: 10px; padding: 14px; margin-bottom: 14px; background: rgba(190, 90, 150, .08); overflow-wrap: anywhere; }
+.coach-step { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .08em; opacity: .75; }
+.coach-title { display: block; margin-top: 4px; }
+.coach-message { margin: 6px 0; line-height: 1.5; }
+.coach-flow { font-size: .85rem; font-weight: 600; }
+@media (max-width: 600px) { .approach-option-summary strong { flex: 1 1 65%; } .approach-option-cost { flex-basis: 100%; } }
+/* The approach list is a vertical accordion, never a horizontal carousel. */
+.approach-options { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 14px 0 18px; }
+.approach-option.approach-slide { display: block; flex: initial; width: 100%; max-width: none; scroll-snap-align: none; padding: 0; opacity: 1; }
+.approach-option.approach-slide.is-active { border-color: var(--accent); }
+.approach-option-summary { min-height: 58px; }
+.approach-option-summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.approach-option[open] > .approach-option-summary { border-bottom: 1px solid var(--line); }
+.approach-option-body { min-width: 0; }
+.approach-select-label { display:block; font-size:.82rem; font-weight:700; margin:12px 0 6px; }
+.approach-select { display:block; width:100%; min-height:48px; padding:10px 42px 10px 14px; border:1px solid var(--line); border-radius:10px; color:var(--text); background:var(--panel); font:inherit; cursor:pointer; }
+.approach-select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+/* Refined single approach selector and selected detail card. */
+.approach-select {
+  width: 100%; min-height: 46px; margin: 4px 0 16px; padding: 10px 42px 10px 14px;
+  color: var(--ink); background-color: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: none; font: 13px var(--sans); appearance: auto;
+}
+.approach-select:hover { border-color: #526456; }
+.approach-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+.approach-option.approach-slide {
+  display: block; width: 100%; max-width: 900px; margin: 0 auto 22px; padding: 22px;
+  flex: initial; scroll-snap-align: none; opacity: 1; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.12); transition: none;
+}
+.approach-option.approach-slide.is-active { border-color: var(--line); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+.approach-option .approach-detail-header { gap: 12px; padding-bottom: 14px; margin-bottom: 16px; }
+.approach-option .approach-idea-text { max-width: 76ch; line-height: 1.75; }
+.approach-option .approach-accordion { margin-top: 20px; border-top: 1px solid var(--line); }
+.approach-option .approach-accordion .acc { border-bottom: 1px solid var(--line); }
+.approach-option .approach-accordion .acc > summary { padding: 14px 2px; }
+.approach-option .approach-step-list { padding: 4px 0 8px 24px; }
+.approach-option .approach-step-list li { padding: 2px 0; }
+.approach-option .insight { border: 0; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; margin: 12px 0 4px; overflow-wrap: anywhere; }
+.approach-option .slide-watch { border-color: var(--line); }
+@media (max-width: 640px) {
+  .approach-option.approach-slide { padding: 16px; margin-bottom: 16px; }
+  .approach-option .approach-detail-header { align-items: flex-start; }
+  .approach-option .complexities-pill-group { width: 100%; }
+}

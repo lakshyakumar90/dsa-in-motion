@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="description" content="Learn data structures and algorithms through interactive visualizations." />
+    <script>
+      try { const raw = localStorage.getItem("dsa-motion-theme"); const saved = raw && raw.startsWith('"') ? JSON.parse(raw) : raw; const legacy = localStorage.getItem("dsa-motion-light"); const theme = (saved === "light" || saved === "dark") ? saved : (legacy !== null ? (legacy === "true" ? "light" : "dark") : (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")); document.documentElement.dataset.theme = theme; } catch { document.documentElement.dataset.theme = "dark"; }
+    </script>
+    <title>DSA in Motion</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

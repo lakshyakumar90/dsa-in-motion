@@ -1,40 +1,66 @@
 # DSA in Motion
 
-A buildless, responsive learning app inspired by hft.md and organized around the 165-question Namaste DSA Sheet.
+An interactive DSA learning app with 165 questions across 14 topics, solution approaches, code in three languages, and step-by-step visualizations. The React application is built with TypeScript, Vite, Tailwind CSS, Radix UI primitives, and local shadcn-style components.
 
 ## Run locally
 
-From this directory, run `python -m http.server 4173 --directory dist`, then open http://localhost:4173.
+Requires Node.js 20.19+ or 22.12+ and npm.
 
-The deployable app is in `dist/`; there is no build step or package installation. Serve it over HTTP rather than opening index.html as a local file.
+```bash
+npm install
+npm run dev
+```
 
-## Included
+Vite prints the local URL after startup. To create and preview the production build:
 
-- All 165 source questions across 14 topics, with source practice/editorial/video links.
-- Independently written statements, examples, approaches, complexity notes, and C++, JavaScript, and Python functions.
-- 14 concept lessons with invariants, pitfalls, and short checks.
-- 165 exact problem animations with editable JSON examples, meaningful state changes, replay, stepping, scrubbing, speed controls, and keyboard shortcuts.
-- Searchable topic/question sidebar with current-question highlighting, independent scroll, live progress indicators, and a mobile drawer.
-- All 495 snippets formatted with Prettier, Black, and clang-format; offline syntax highlighting, line numbers, copy, and optional wrapping.
-- Search by question/company/topic, difficulty and topic filters, bookmarks, completion, personal notes, and light/dark themes.
-- Browser-local progress; no account or cross-device synchronization.
+```bash
+npm run build
+npm run preview
+```
 
-Every question runs its own problem-specific animation. Topic pages use representative exact-question examples. The animation library exposes all 165 questions. There is no arbitrary code execution or online judge; copy solutions into the linked practice environment. Judge node classes and standard language setup may be required as noted in the UI.
+The production build is written to `react-build/`. It intentionally does not overwrite `dist/`, which remains the existing vanilla application and its reference trace source.
 
-## Verification
+## Project structure
 
-All 165 solutions have content and three implementations. Python/JavaScript syntax checks passed, and all C++ snippets compiled with standard judge node stubs under C++14. Representative examples and randomized tests passed across topics. All 165 default problem traces pass. All 2,006 emitted frames render, all 165 question routes load, all 495 code tabs preserve the displayed source, and all 14 topic routes and the full animation library pass DOM integration checks. Thousands of independent randomized comparisons cover search, pointers, lists, strings, greedy, heaps, DP and graph algorithms. Python formatting preserves each snippet's parsed AST. Browser checks covered navigation, search, language switching, custom inputs, saved notes/progress, mobile layout, and playback.
+- `src/app/` — hash navigation, app shell, and theme provider.
+- `src/components/` — page layouts, code viewer, visualizers, and reusable UI primitives.
+- `src/hooks/` — React playback and concept-lab state.
+- `src/data/` — question, topic, curriculum, and solution data.
+- `src/algorithms/traceRegistry.ts` — typed boundary for loading and normalizing trace output.
+- `src/types/` — application, problem, and animation contracts.
+- `dist/` — preserved legacy app, reference algorithm traces, and concept-lab definitions.
+- `react-build/` — generated output (ignored by Git).
 
-This is not an exhaustive proof of every solution on every judge. Check the problem's constraints and provided function signature when submitting.
+The React pages, state, controls, and visualization rendering are implemented in TypeScript. The original problem-trace and concept-lab definitions remain JavaScript in `dist/` and are loaded by the typed trace adapter to preserve their exact logic and emitted frames. They do not render or control the React UI. This boundary keeps animation behavior faithful while retaining the legacy app as a runnable reference.
 
-## Sources
+## Features
 
-Question titles/order/difficulty/source links: https://namastedev.com/namaste-dsa-sheet (retrieved November 3, 2026).
-Visual reference: https://hft.md/.
-Original explanatory text, visualizers, UI implementation, and solution code authored for this app. Independent project; not affiliated with either source.
+- 165 source questions, grouped into 14 topics, with difficulty, company tags, and practice/editorial/video links.
+- Search and filters for question, topic, company, difficulty, completion, and bookmarks.
+- Topic lessons, invariants, pitfalls, quizzes, and interactive concept models.
+- Problem descriptions and selectable brute-force, better, and optimal approaches.
+- A distinction between exact execution traces and conceptual walkthroughs for non-optimal approaches.
+- React animation controls: play/pause, restart, previous/next, timeline, speed, and editable example inputs.
+- Array, matrix, graph, pointer, linked-list, interval, stack, tree, and other concept visualizations.
+- C++, JavaScript, and Python code with syntax highlighting, line numbers, copy, and wrapping controls.
+- Browser-local completion, bookmarks, personal notes, and a persistent light/dark theme.
+- A self-hosted DM Sans typeface, shared type and spacing scales, responsive layouts, and reduced-motion support.
 
-The source sheet's “Second Largest” row links to a digit-string problem. This app follows that linked problem and explains the mismatch.
+## Validation
 
-## Client dependencies
+```bash
+npm run typecheck
+npm run test
+npm run e2e
+npm run build
+```
 
-Offline syntax highlighting uses highlight.js (BSD-3-Clause); see `dist/highlight-LICENSE.txt`. Formatters and bundling tools are authoring-only; the published app needs no package installation.
+Unit tests compare generated frames and outputs against all 165 preserved reference traces and exercise the concept models. Playwright covers question browsing, approach selection, playback, theme persistence, topic lessons, and common viewport widths.
+
+## Data and attribution
+
+Question titles, order, difficulty, and source links: [Namaste DSA Sheet](https://namastedev.com/namaste-dsa-sheet) (retrieved November 3, 2026). Visual reference: [hft.md](https://hft.md/). Explanatory text, visualizers, UI, and solution code were authored for this app. This independent project is not affiliated with either source.
+
+The sheet's “Second Largest” row links to a digit-string problem. The app follows the linked problem and explains the mismatch.
+
+Offline syntax highlighting uses highlight.js (BSD-3-Clause); see `dist/highlight-LICENSE.txt`. No backend, account, online judge, or arbitrary code execution is used. Some judge submissions require standard headers or judge-provided node types, as noted in the code viewer.

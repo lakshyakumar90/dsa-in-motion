@@ -36,17 +36,22 @@ globalThis.PROBLEM_TRACES = {};
   };
   globalThis.UI_ICON = icon;
   class ProblemPlayer {
-    constructor(root, name, compact = false) {
+    constructor(root, name, compact = false, options = {}) {
       this.root = root;
       this.compact = compact;
       this.name = name;
-      this.spec = PROBLEM_TRACES[name];
+      this.options = options;
+      this.approachIndex = options.approachIndex ?? 0;
+      this.allApproaches = options.approaches || null;
+      this.approachSpec = null;
+      this.spec = this._resolveSpec();
       this.frames = [];
       this.index = 0;
       this.timer = null;
       this.speed = 1100;
       this.groups = new Map();
       this.build();
+      this._updateApproachLabel();
       this.load(this.spec.input);
       this.hidden = () => {
         if (document.hidden) this.pause();
@@ -55,10 +60,63 @@ globalThis.PROBLEM_TRACES = {};
       this.resize = new ResizeObserver(() => this.render(false));
       this.resize.observe(this.root);
     }
+    _resolveSpec() {
+      const base = PROBLEM_TRACES[this.name];
+      if (
+        this.allApproaches &&
+        this.allApproaches.length &&
+        typeof globalThis.buildApproachTrace === "function"
+      ) {
+        const idx = Math.max(
+          0,
+          Math.min(this.approachIndex, this.allApproaches.length - 1),
+        );
+        this.approachSpec = buildApproachTrace(
+          this.name,
+          this.allApproaches[idx],
+          this.allApproaches,
+          base?.input,
+        );
+        return this.approachSpec;
+      }
+      return base;
+    }
+    setApproach(idx, input) {
+      this.approachIndex = idx;
+      this.spec = this._resolveSpec();
+      try {
+        this.load(input ?? this.spec.input);
+      } catch (e) {
+        this.root.querySelector(".trace-error").textContent = e.message;
+      }
+      this._updateApproachLabel();
+    }
+    _updateApproachLabel() {
+      const el = this.root.querySelector(".player-approach");
+      if (!el) return;
+      if (this.allApproaches && this.allApproaches.length) {
+        const a =
+          this.allApproaches[
+            Math.max(
+              0,
+              Math.min(this.approachIndex, this.allApproaches.length - 1),
+            )
+          ];
+        const lbl =
+          a.type === "brute"
+            ? "Brute Force"
+            : a.type === "better"
+              ? "Better"
+              : "Optimal";
+        el.hidden = false;
+        el.textContent = `${lbl} · ${a.time} · ${a.space}`;
+        el.dataset.type = a.type || "optimal";
+      } else el.hidden = true;
+    }
     build() {
       this.root.className =
         "problem-player" + (this.compact ? " is-compact" : "");
-      this.root.innerHTML = `<div class="player-heading"><div><span class="player-dot"></span><b>${h(this.name)}</b></div><span class="player-badge">Live algorithm trace</span></div><div class="trace-layout"><div class="trace-stage"><div class="trace-panels"></div><div class="trace-result" hidden></div></div><aside class="trace-inspector"><span class="inspector-label">Current state</span><h3 class="trace-title"></h3><p class="trace-message" aria-live="polite" aria-atomic="true"></p><dl class="trace-vars"></dl></aside></div><div class="trace-controls"><div class="transport"><button class="reset" aria-label="Reset animation">${icon("reset")}</button><button class="back" aria-label="Previous animation step">${icon("back")}</button><button class="play" aria-label="Play animation">${icon("play")}<span>Play</span></button><button class="next" aria-label="Next animation step">${icon("next")}</button></div><input type="range" aria-label="Animation step" min="0" value="0"><span class="trace-counter"></span><select aria-label="Animation speed"><option value="1800">0.5×</option><option value="1100" selected>1×</option><option value="650">2×</option></select></div><div class="trace-legend"><span><i class="active-key"></i>Current operation</span><span><i class="done-key"></i>Processed / selected</span><span><i></i>Waiting</span><small>Use ← / → to step</small></div><details class="trace-inputs"><summary>Change the example <span>JSON input</span></summary><p>Edit the input, then rebuild the animation. Small inputs make each operation easier to follow.</p><textarea aria-label="Animation input" spellcheck="false"></textarea><div><button class="apply-input">Run this input</button><button class="restore-input">Restore example</button></div><p class="trace-error" role="alert"></p></details>`;
+      this.root.innerHTML = `<div class="player-heading"><div><span class="player-dot"></span><b>${h(this.name)}</b><span class="player-approach" hidden></span></div><span class="player-badge">Live algorithm trace</span></div><div class="trace-layout"><div class="trace-stage"><div class="trace-coach" aria-live="polite"><span class="coach-step"></span><strong class="coach-title"></strong><p class="coach-message"></p><div class="coach-flow"></div></div><div class="trace-panels"></div><div class="trace-result" hidden></div></div><aside class="trace-inspector"><span class="inspector-label">Current state</span><h3 class="trace-title"></h3><p class="trace-message" aria-live="polite" aria-atomic="true"></p><div class="trace-deepdive" hidden><div class="deep-row"><span>Why</span><p class="deep-why"></p></div><div class="deep-row"><span>Cost</span><p class="deep-cost"></p></div><div class="deep-row"><span>Takeaway</span><p class="deep-insight"></p></div></div><dl class="trace-vars"></dl></aside></div><div class="trace-controls"><div class="transport"><button class="reset" aria-label="Reset animation">${icon("reset")}</button><button class="back" aria-label="Previous animation step">${icon("back")}</button><button class="play" aria-label="Play animation">${icon("play")}<span>Play</span></button><button class="next" aria-label="Next animation step">${icon("next")}</button></div><input type="range" aria-label="Animation step" min="0" value="0"><span class="trace-counter"></span><select aria-label="Animation speed"><option value="1800">0.5×</option><option value="1100" selected>1×</option><option value="650">2×</option></select></div><div class="trace-legend"><span><i class="active-key"></i>Current operation</span><span><i class="done-key"></i>Processed / selected</span><span><i></i>Waiting</span><small>Use ← / → to step</small></div><details class="trace-inputs"><summary>Change the example <span>JSON input</span></summary><p>Edit the input, then rebuild the animation. Small inputs make each operation easier to follow.</p><textarea aria-label="Animation input" spellcheck="false"></textarea><div><button class="apply-input">Run this input</button><button class="restore-input">Restore example</button></div><p class="trace-error" role="alert"></p></details>`;
       const q = (s) => this.root.querySelector(s);
       q("textarea").value = JSON.stringify(this.spec.input, null, 2);
       q(".play").onclick = () => this.toggle();
@@ -105,6 +163,8 @@ globalThis.PROBLEM_TRACES = {};
     }
     load(input) {
       this.pause();
+      if (!this.spec || typeof this.spec.run !== "function")
+        throw Error("No animation available for this approach yet.");
       let count = 0;
       const inspect = (v, depth = 0) => {
         if (depth > 8)
@@ -233,8 +293,24 @@ globalThis.PROBLEM_TRACES = {};
       if (!this.frames.length) return;
       const f = this.frames[this.index],
         q = (s) => this.root.querySelector(s);
+      // Explain the current frame beside the visual, using only recorded state.
+      q(".coach-step").textContent = `STEP ${this.index + 1} OF ${this.frames.length}`;
+      q(".coach-title").textContent = f.title ?? `Step ${this.index + 1}`;
+      q(".coach-message").textContent = f.message ?? "";
+      const pointers = (f.arrays || []).flatMap(a => Object.entries(a.pointers || {}).map(([name, index]) => `${name} → ${a.label || "array"}[${index}]`));
+      q(".coach-flow").textContent = pointers.length ? pointers.join("   •   ") : (f.output !== undefined ? `Result → ${pretty(f.output)}` : "Read the highlighted state below ↓");
       q(".trace-title").textContent = f.title ?? `Step ${this.index + 1}`;
       q(".trace-message").textContent = f.message ?? "";
+      const dd = q(".trace-deepdive");
+      if (dd) {
+        const hasDeep = !!(f.why || f.cost || f.insight);
+        dd.hidden = !hasDeep;
+        if (hasDeep) {
+          dd.querySelector(".deep-why").textContent = f.why || "—";
+          dd.querySelector(".deep-cost").textContent = f.cost || "—";
+          dd.querySelector(".deep-insight").textContent = f.insight || "—";
+        }
+      }
       q(".trace-vars").innerHTML = Object.entries(f.vars ?? {})
         .map(
           ([k, v]) =>
