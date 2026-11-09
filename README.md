@@ -16,14 +16,15 @@ npm run dev
 
 Vite prints the local development URL in the terminal.
 
-## Build for hosting
+## Deploy on Cloudflare Pages
 
-```bash
-npm run build
-npm run preview
-```
+Configure the Cloudflare Pages project with:
 
-The production-ready static site is generated in `react-build/`. Upload that directory to your hosting provider or connect the repository to your preferred deployment service. This repository does not configure automatic GitHub Pages deployment.
+- **Build command:** `npm run build`
+- **Build output directory:** `react-build`
+- **Root directory:** `/` (the repository root)
+
+The build creates the production site in `react-build/`. The former checked-in `dist/` site has been removed. The trace definitions needed by the React application now live in `src/reference-traces/` and are bundled during the build.
 
 ## Features
 
@@ -43,8 +44,8 @@ The production-ready static site is generated in `react-build/`. Upload that dir
 - `src/hooks/` — animation playback and concept-lab state.
 - `src/data/` — question, topic, curriculum, and solution data.
 - `src/algorithms/traceRegistry.ts` — typed trace generation and normalization.
+- `src/reference-traces/` — reference trace and concept-lab definitions used by the visualizers.
 - `src/types/` — application, problem, and animation contracts.
-- `dist/` — preserved legacy app and reference trace definitions.
 - `react-build/` — generated production output; excluded from Git.
 
 ## Development checks
@@ -62,4 +63,4 @@ Question titles, order, difficulty, and source links are based on the [Namaste D
 
 The sheet's “Second Largest” row links to a digit-string problem. This app follows the linked problem and explains the mismatch.
 
-Offline syntax highlighting uses highlight.js (BSD-3-Clause); see `dist/highlight-LICENSE.txt`. The app has no backend, account system, online judge, or arbitrary code execution. Some judge submissions require standard headers or judge-provided node types, as noted in the code viewer.
+Offline syntax highlighting uses highlight.js (BSD-3-Clause), included as an npm dependency. The app has no backend, account system, online judge, or arbitrary code execution. Some judge submissions require standard headers or judge-provided node types, as noted in the code viewer.

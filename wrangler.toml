@@ -1,0 +1,3 @@
+name = "dsa-in-motion"
+compatibility_date = "2026-11-09"
+pages_build_output_dir = "./react-build"

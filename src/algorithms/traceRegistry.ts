@@ -6,17 +6,17 @@ export function ensureTraceRuntime(): Promise<void> {
   globalThis.__DSA_RUNTIME_READY__ ??= (async () => {
     globalThis.PROBLEM_TRACES = {};
     await Promise.all([
-      import("../../dist/traces-foundations.js"),
-      import("../../dist/traces-search-trees.js"),
-      import("../../dist/traces-dp-graphs.js"),
+      import("../reference-traces/traces-foundations.js"),
+      import("../reference-traces/traces-search-trees.js"),
+      import("../reference-traces/traces-dp-graphs.js"),
     ]);
-    await import("../../dist/approach-traces.js");
+    await import("../reference-traces/approach-traces.js");
   })();
   return globalThis.__DSA_RUNTIME_READY__;
 }
 
 export async function ensureConceptLabs(): Promise<void> {
-  await import("../../dist/visuals.js");
+  await import("../reference-traces/visuals.js");
 }
 
 function removeDuplicatesBruteTrace(input: Record<string, unknown>): GeneratedTrace {

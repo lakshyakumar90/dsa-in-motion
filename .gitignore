@@ -1,7 +1,6 @@
-dist/.openai/
-
 node_modules/
 react-build/
 coverage/
 playwright-report/
 test-results/
+.openai/hosting.json
