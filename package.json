@@ -1,7 +1,7 @@
 {
   "name": "dsa-in-motion",
   "version": "1.0.0",
-  "description": "React and TypeScript migration for DSA in Motion",
+  "description": "Interactive data structures and algorithms visualizer with step-by-step animations and 165 coding practice questions",
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
@@ -12,7 +12,15 @@
     "test:watch": "vitest",
     "e2e": "playwright test"
   },
-  "keywords": [],
+  "keywords": [
+    "dsa",
+    "data structures",
+    "algorithms",
+    "visualizer",
+    "interactive learning",
+    "coding interview preparation",
+    "algorithm visualization"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",

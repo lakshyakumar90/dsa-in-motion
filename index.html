@@ -3,12 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050505" />
-    <meta name="description" content="Learn data structures and algorithms through interactive visualizations." />
+    <meta name="theme-color" content="#0b1110" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="description" content="Learn data structures and algorithms with step-by-step visualizations, 165 questions, and brute force, better, and optimal solutions." />
+    <meta name="keywords" content="DSA visualizer, interactive DSA, data structures and algorithms, algorithm visualization, DSA learning platform, coding interview preparation, algorithm animations, sorting algorithms, graph algorithms, tree traversal, coding practice" />
+    <meta name="application-name" content="DSA in Motion" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="DSA in Motion" />
+    <meta property="og:title" content="DSA in Motion | Interactive DSA Visualizer" />
+    <meta property="og:description" content="Learn data structures and algorithms one clear step at a time with interactive visualizations, 165 questions, and three solution approaches." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/lakshyakumar90/dsa-in-motion/main/public/og-image.png" />
+    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/lakshyakumar90/dsa-in-motion/main/public/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="DSA in Motion interactive algorithm visualizer showing a two-pointer array walkthrough." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DSA in Motion | Interactive DSA Visualizer" />
+    <meta name="twitter:description" content="Learn data structures and algorithms one clear step at a time with interactive visualizations, 165 questions, and three solution approaches." />
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/lakshyakumar90/dsa-in-motion/main/public/og-image.png" />
+    <meta name="twitter:image:alt" content="DSA in Motion interactive algorithm visualizer showing a two-pointer array walkthrough." />
+
     <script>
       try { const raw = localStorage.getItem("dsa-motion-theme"); const saved = raw && raw.startsWith('"') ? JSON.parse(raw) : raw; const legacy = localStorage.getItem("dsa-motion-light"); const theme = (saved === "light" || saved === "dark") ? saved : (legacy !== null ? (legacy === "true" ? "light" : "dark") : (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")); document.documentElement.dataset.theme = theme; } catch { document.documentElement.dataset.theme = "dark"; }
     </script>
-    <title>DSA in Motion</title>
+    <title>DSA in Motion | Interactive DSA Visualizer</title>
   </head>
   <body>
     <div id="root"></div>
