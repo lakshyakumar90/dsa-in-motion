@@ -1,0 +1,528 @@
+/* ==========================================================================
+   DSA in Motion — ChaiCode-Inspired UI Enhancements & Notes Hub
+   ========================================================================== */
+
+/* Header additions */
+.site-nav a.is-current {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font: 600 11px ui-monospace, monospace;
+  white-space: nowrap;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+
+.header-progress-pill:hover {
+  border-color: var(--primary);
+  color: var(--foreground);
+}
+
+.progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.footer-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Home 4-column stats & topic DS chips */
+.home-stats-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.topic-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.topic-ds-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font: 500 10px ui-monospace, monospace;
+}
+
+/* ProblemPage DS badge & 3-Approach Selector Cards */
+.problem-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ds-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  font: 600 11px var(--font-sans);
+}
+
+.approach-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 18px;
+}
+
+.approach-selector-card {
+  display: grid;
+  gap: 10px;
+  padding: 15px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.approach-selector-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  transform: translateY(-1px);
+}
+
+.approach-selector-card.is-selected.brute {
+  border-color: #c28e3c;
+  background: color-mix(in srgb, #e8b45f 9%, var(--card));
+}
+
+.approach-selector-card.is-selected.better {
+  border-color: #38bdf8;
+  background: color-mix(in srgb, #38bdf8 9%, var(--card));
+}
+
+.approach-selector-card.is-selected.optimal {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 9%, var(--card));
+}
+
+.approach-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.approach-card-step {
+  color: var(--muted-foreground);
+  font: 600 11px ui-monospace, monospace;
+}
+
+.approach-card-title {
+  color: var(--foreground);
+  font: 600 13px/1.35 var(--font-sans);
+}
+
+.approach-card-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.approach-card-metrics b {
+  color: var(--foreground);
+  font-family: ui-monospace, monospace;
+}
+
+/* Dedicated Notes Hub (#notes) */
+.notes-page {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 0 clamp(var(--space-6), 4vw, 3.5rem) 5rem;
+}
+
+.notes-mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.notes-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease, background-color 0.16s ease;
+}
+
+.notes-tab span {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--primary);
+  font: 600 11px ui-monospace, monospace;
+}
+
+.notes-tab.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  color: var(--foreground);
+}
+
+.notes-export-btn {
+  margin-left: auto;
+}
+
+.notes-study-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.notes-topic-rail {
+  display: grid;
+  gap: 6px;
+  position: sticky;
+  top: 86px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.notes-topic-btn {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.notes-topic-btn:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+}
+
+.notes-topic-btn.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--card));
+}
+
+.notes-topic-num {
+  color: var(--primary);
+  font: 700 11px ui-monospace, monospace;
+  padding-top: 2px;
+}
+
+.notes-topic-btn strong {
+  display: block;
+  color: var(--foreground);
+  font-size: 13px;
+}
+
+.notes-topic-btn small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.notes-sheet-card {
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.notes-sheet-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notes-sheet-header h2 {
+  margin: 6px 0 0;
+  font: 600 28px/1.15 var(--font-sans);
+  letter-spacing: -0.03em;
+}
+
+.notes-topic-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font: 600 12px var(--font-sans);
+}
+
+.notes-mental-model {
+  padding: 16px 18px;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 9px 9px 0;
+  background: var(--secondary);
+}
+
+.notes-mental-model strong {
+  display: block;
+  color: var(--primary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notes-mental-model p {
+  margin: 6px 0 0;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.notes-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.notes-block {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--elevated);
+}
+
+.notes-block h3,
+.notes-complexity-box h3,
+.notes-related-problems h3 {
+  margin: 0 0 10px;
+  font: 600 14px var(--font-sans);
+}
+
+.notes-block ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 7px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.notes-template-box {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+}
+
+.notes-template-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--secondary);
+  font: 600 11px ui-monospace, monospace;
+  color: var(--muted-foreground);
+}
+
+.notes-template-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--card);
+  color: var(--foreground);
+  font: 600 11px var(--font-sans);
+  cursor: pointer;
+}
+
+.notes-template-box pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font: 12.5px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--foreground);
+}
+
+.notes-complexity-box table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.notes-complexity-box th,
+.notes-complexity-box td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.notes-complexity-box th {
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.notes-complexity-box td code {
+  color: var(--primary);
+  font: 600 12px ui-monospace, monospace;
+}
+
+.notes-problem-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notes-problem-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--elevated);
+  font-size: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.notes-problem-chip:hover {
+  border-color: var(--primary);
+}
+
+.notes-problem-chip em {
+  font-style: normal;
+}
+
+/* Personal Notes Grid */
+.notes-personal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.notes-personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.personal-note-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.personal-note-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.personal-note-card-head a {
+  display: block;
+  font: 600 14px var(--font-sans);
+  color: var(--foreground);
+}
+
+.personal-note-card-head a:hover {
+  color: var(--primary);
+}
+
+.personal-note-card-head small {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.personal-note-card textarea {
+  width: 100%;
+  min-height: 86px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--background);
+  color: var(--foreground);
+  font: 12.5px/1.6 var(--font-sans);
+  resize: vertical;
+}
+
+@media (max-width: 960px) {
+  .notes-study-layout {
+    grid-template-columns: 1fr;
+  }
+  .notes-topic-rail {
+    position: static;
+    max-height: none;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  .approach-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-stats-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .notes-two-col,
+  .notes-personal-grid {
+    grid-template-columns: 1fr;
+  }
+  .header-progress-pill {
+    display: none;
+  }
+}
