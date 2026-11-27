@@ -4,21 +4,18 @@ import { Pause, Play, RotateCcw, StepBack, StepForward } from "lucide-react";
 import { useAnimationPlayer } from "@/hooks/useAnimationPlayer";
 import type { Approach } from "@/types/problem";
 import { getLogicView, LogicPanel } from "./LogicPanel";
-import { ArrayVisualizer } from "./visualizers/ArrayVisualizer";
-import { GraphVisualizer } from "./visualizers/GraphVisualizer";
-import { MatrixVisualizer } from "./visualizers/MatrixDPVisualizer";
+import { isResultArrayLabel, VisualizerRouter } from "./VisualizerRouter";
 import { StepExplanation } from "./StepExplanation";
 import { prettyValue } from "@/lib/animationUtils";
 import { Button } from "@/components/ui/button";
 import type { AnimationFrame } from "@/types/animation";
 import { approachKindLabel } from "@/algorithms/traceRegistry";
+import { classifyDataStructure } from "@/algorithms/dsClassifier";
 
 function resultFromFrame(frame: NonNullable<ReturnType<typeof useAnimationPlayer>["frame"]>) {
-  const resultArray = frame.arrays?.find((array) => isResultArray(array.label));
+  const resultArray = frame.arrays?.find((array) => isResultArrayLabel(array.label));
   if (resultArray) return { label: `${resultArray.label} · live`, value: resultArray.values ?? [] };
   const variables = frame.vars ?? {};
-  // Explicit result state wins over intermediate values such as a candidate
-  // profit, which can change while the best answer remains the same.
   if (variables.result !== undefined) return { label: "Result so far", value: variables.result };
   const resultKey = Object.keys(variables).find((key) => /result|output|answers?|returns?|solutions?|profit|total|count|best|found|sum|ways|matches|area|water|valid|length|diameter|distance|cost|minimum|maximum|surviv/i.test(key) && variables[key] !== undefined);
   if (resultKey) return { label: `${resultKey} so far`, value: variables[resultKey] };
@@ -26,13 +23,7 @@ function resultFromFrame(frame: NonNullable<ReturnType<typeof useAnimationPlayer
   return undefined;
 }
 
-function isResultArray(label = "") {
-  return /result|output|answer|merged|moved values|sorted visits|window maxima|itinerary|topological order|partition lengths|days to wait|valid prefix|unique|retained prefix|kept values/i.test(label);
-}
-
 function LiveResultPanel({ problemName, frame, initialFrame, frames, index, started }: { problemName: string; frame: AnimationFrame; initialFrame: AnimationFrame; frames: AnimationFrame[]; index: number; started: boolean }) {
-  // Compare with the preceding algorithm frame, not the last frame the viewer
-  // happened to visit. Seeking backwards must not invent a result change.
   let previous = resultFromFrame(initialFrame);
   if (started) for (let i = 0; i < index; i++) previous = resultFromFrame(frames[i]) ?? previous;
   const tracked = resultFromFrame(frame) ?? previous;
@@ -66,6 +57,7 @@ function LiveResultPanel({ problemName, frame, initialFrame, frames, index, star
 
 export function AnimationPlayer({ problemName, approach, approaches, selectedIndex = 0, onApproachChange }: { problemName: string; approach: Approach; approaches: Approach[]; selectedIndex?: number; onApproachChange?: (index: number) => void }) {
   const player = useAnimationPlayer(problemName, approach, approaches);
+  const dsMeta = useMemo(() => classifyDataStructure(problemName), [problemName]);
   const [inputDraft, setInputDraft] = useState("{}");
   const [inputError, setInputError] = useState<string | null>(null);
   useEffect(() => setInputDraft(JSON.stringify(player.input, null, 2)), [player.input]);
@@ -81,13 +73,11 @@ export function AnimationPlayer({ problemName, approach, approaches, selectedInd
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [player.play, player.pause, player.next, player.previous, player.reset, player.status]);
   const frame = player.frame;
-  const logic = frame ? getLogicView(problemName, approach, frame) : undefined;
+  const logic = frame ? getLogicView(problemName, approach, frame, player.mode) : undefined;
   const logicLine = logic?.active === undefined ? undefined : logic.lines[logic.active - 1]?.sourceLine ?? logic.active;
   const progressGroups = useMemo(() => {
     const count = player.frames.length;
     if (!count) return [];
-    // Keep the navigation rail readable even for long traces: each segment
-    // represents one frame for short traces, or a small range for long ones.
     const groupCount = Math.min(count, 48);
     return Array.from({ length: groupCount }, (_, index) => {
       const start = Math.floor(index * count / groupCount);
@@ -95,8 +85,33 @@ export function AnimationPlayer({ problemName, approach, approaches, selectedInd
       return { start, end, label: start === end ? `Go to step ${start + 1}` : `Go to steps ${start + 1} through ${end + 1}` };
     });
   }, [player.frames.length]);
+
   return <section className="player-shell" aria-label={`${problemName} animation player`}>
-    <div className="player-heading"><div><span className="live-dot" /><strong>{problemName}</strong><span className="approach-meta">{approach.time} time · {approach.space} space</span></div>{onApproachChange && <label className="player-approach">Approach<select value={selectedIndex} onChange={(event) => onApproachChange(Number(event.target.value))} aria-label="Animation approach">{approaches.map((item, index) => <option key={`${item.type}-${index}`} value={index}>{approachKindLabel(item.type)} · {item.name.replace(/^Approach\s+\d+:\s*/, "")}</option>)}</select></label>}<span className={`trace-mode ${player.mode}`}>{player.mode === "conceptual" ? "Conceptual walkthrough" : "Algorithm trace"}</span></div>
+    <div className="player-heading">
+      <div>
+        <span className="live-dot" />
+        <strong>{problemName}</strong>
+        <span className="ds-kind-pill" title={dsMeta.accentHint}>{dsMeta.shortLabel}</span>
+        <span className="approach-meta">{approach.time} time · {approach.space} space</span>
+      </div>
+      {onApproachChange && (
+        <div className="player-approach-pills" role="tablist" aria-label="Animation approach">
+          {approaches.map((item, idx) => (
+            <button
+              key={`${item.type}-${idx}`}
+              type="button"
+              role="tab"
+              aria-selected={idx === selectedIndex}
+              className={`player-approach-pill ${item.type}${idx === selectedIndex ? " is-active" : ""}`}
+              onClick={() => onApproachChange(idx)}
+            >
+              {approachKindLabel(item.type)}
+            </button>
+          ))}
+        </div>
+      )}
+      <span className={`trace-mode ${player.mode}`}>{player.mode === "conceptual" ? "Conceptual walkthrough" : "Algorithm trace"}</span>
+    </div>
     {player.error ? <div className="error-state" role="alert">{player.error}</div> : !frame ? <div className="loading-state">Loading the algorithm trace…</div> : <>
       <div className="player-progress" role="group" aria-label="Step overview">
         <span className="progress-caption">{player.started ? `Step ${player.index + 1} of ${player.frames.length}` : `${player.frames.length} steps`}</span>
@@ -104,15 +119,12 @@ export function AnimationPlayer({ problemName, approach, approaches, selectedInd
       </div>
       <div className="player-content">
         <div className="visual-column">
-          <div className="visual-frame-stage"><div className="visual-frame-layout"><div className={`visual-frame-stack${frame.nodes?.length ? " graph-frame-stack" : ""}`}>
-            {frame.nodes?.length ? <div className="graph-support-layout">
-              <GraphVisualizer nodes={frame.nodes} edges={frame.edges ?? []} label={frame.graphLabel} />
-              {!!(frame.arrays ?? []).filter((array) => !isResultArray(array.label)).length && <div className="graph-support-arrays" aria-label="Supporting traversal state">
-                {(frame.arrays ?? []).filter((array) => !isResultArray(array.label)).map((array, index) => <ArrayVisualizer array={array} key={`${array.label ?? "array"}-${index}`} />)}
-              </div>}
-            </div> : (frame.arrays ?? []).filter((array) => !isResultArray(array.label)).map((array, index) => <ArrayVisualizer array={array} key={`${array.label ?? "array"}-${index}`} />)}
-            {frame.matrix && <MatrixVisualizer matrix={frame.matrix} />}
-          </div><LiveResultPanel problemName={problemName} frame={frame} initialFrame={player.initialFrame} frames={player.frames} index={player.index} started={player.started} /></div></div>
+          <div className="visual-frame-stage">
+            <div className="visual-frame-layout">
+              <VisualizerRouter problemName={problemName} frame={frame} dsKind={dsMeta.kind} />
+              <LiveResultPanel problemName={problemName} frame={frame} initialFrame={player.initialFrame} frames={player.frames} index={player.index} started={player.started} />
+            </div>
+          </div>
         </div>
         <aside className="lesson-side-rail">
           <div className="lesson-code-stage"><LogicPanel problemName={problemName} approach={approach} frame={frame} mode={player.mode} /></div>
