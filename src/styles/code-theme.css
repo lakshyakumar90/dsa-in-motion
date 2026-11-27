@@ -1,0 +1,142 @@
+/* ==========================================================================
+   Vibrant Dual-Theme Syntax Highlighting (One Dark Pro / GitHub Light)
+   Applies to both full CodeViewer and synchronized LogicPanel
+   ========================================================================== */
+
+.code-viewer {
+  background: #0d1017;
+  border-color: #252b37;
+}
+
+.code-viewer .code-toolbar,
+.code-viewer .code-filebar,
+.code-viewer .code-gutter {
+  background: #131722;
+  border-color: #252b37;
+}
+
+.code-viewer .code-content,
+.code-viewer .code-gutter {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.72;
+}
+
+.code-viewer .code-content {
+  color: #e6edf3;
+}
+
+.hljs {
+  color: #e6edf3;
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #7c8698;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-storage,
+.hljs-meta .hljs-keyword {
+  color: #c792ea;
+  font-weight: 500;
+}
+
+.hljs-type,
+.hljs-built_in,
+.hljs-class .hljs-title,
+.hljs-title.class_ {
+  color: #56d4dd;
+}
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-function {
+  color: #7aa2f7;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-attr,
+.hljs-template-tag {
+  color: #9ece6a;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-symbol {
+  color: #ff9e64;
+}
+
+.hljs-variable,
+.hljs-params,
+.hljs-property {
+  color: #f7768e;
+}
+
+.hljs-operator,
+.hljs-punctuation {
+  color: #89ddff;
+}
+
+.hljs-meta {
+  color: #e0af68;
+}
+
+/* Light theme crisp syntax colors */
+:root[data-theme="light"] .code-viewer {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+:root[data-theme="light"] .code-viewer .code-toolbar,
+:root[data-theme="light"] .code-viewer .code-filebar,
+:root[data-theme="light"] .code-viewer .code-gutter {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+:root[data-theme="light"] .code-viewer .code-content,
+:root[data-theme="light"] .code-viewer .hljs {
+  color: #1e293b;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-comment,
+:root[data-theme="light"] .code-viewer .hljs-quote {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-keyword,
+:root[data-theme="light"] .code-viewer .hljs-selector-tag {
+  color: #be123c;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-type,
+:root[data-theme="light"] .code-viewer .hljs-built_in,
+:root[data-theme="light"] .code-viewer .hljs-title.class_ {
+  color: #0369a1;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-title,
+:root[data-theme="light"] .code-viewer .hljs-title.function_,
+:root[data-theme="light"] .code-viewer .hljs-function {
+  color: #6d28d9;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-string,
+:root[data-theme="light"] .code-viewer .hljs-attr {
+  color: #15803d;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-number,
+:root[data-theme="light"] .code-viewer .hljs-literal {
+  color: #c2410c;
+}
+
+:root[data-theme="light"] .code-viewer .hljs-variable,
+:root[data-theme="light"] .code-viewer .hljs-params {
+  color: #b45309;
+}

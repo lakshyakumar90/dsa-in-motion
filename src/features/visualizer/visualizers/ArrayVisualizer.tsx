@@ -4,7 +4,6 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 
 export type ArrayVisualVariant = "array" | "string" | "binary-search" | "sliding-window" | "dp-array";
 
-interface PointerPosition { x: number; y: number }
 const EMPTY_VALUES: unknown[] = [];
 
 function stableValueKey(value: unknown): string {
@@ -12,12 +11,35 @@ function stableValueKey(value: unknown): string {
   catch { return `${typeof value}:${String(value)}`; }
 }
 
-export function ArrayVisualizer({ array, variant = "array" }: { array: ArrayFrame; variant?: ArrayVisualVariant }) {
+const POINTER_VAR_RE = /^(i|j|k|l|r|left|right|lo|hi|low|high|mid|slow|fast|start|end|read|write|w|p1|p2|buy|sell|minPriceDay|day)$/i;
+
+export function ArrayVisualizer({
+  array,
+  variant = "array",
+  vars,
+}: {
+  array: ArrayFrame;
+  variant?: ArrayVisualVariant;
+  vars?: Record<string, unknown>;
+}) {
   const values = array.values ?? EMPTY_VALUES;
   const trackRef = useRef<HTMLDivElement>(null);
   const previousRects = useRef(new Map<string, DOMRect>());
-  const firstPointerLayout = useRef(true);
-  const pointerSignature = JSON.stringify(array.pointers ?? {});
+
+  // Merge explicit pointers with index-valued pointer vars so Two Pointers,
+  // Sliding Window, and Binary Search ALWAYS show visible pointer badges.
+  const mergedPointers = useMemo(() => {
+    const out: Record<string, number> = { ...(array.pointers ?? {}) };
+    if (Object.keys(out).length === 0 && vars && values.length > 0) {
+      for (const [key, val] of Object.entries(vars)) {
+        if (POINTER_VAR_RE.test(key) && typeof val === "number" && Number.isInteger(val) && val >= 0 && val < values.length) {
+          out[key] = val;
+        }
+      }
+    }
+    return out;
+  }, [array.pointers, vars, values.length]);
+
   const valueKeys = useMemo(() => {
     const occurrences = new Map<string, number>();
     return values.map((value) => {
@@ -27,17 +49,16 @@ export function ArrayVisualizer({ array, variant = "array" }: { array: ArrayFram
       return `${base}#${occurrence}`;
     });
   }, [array.values]);
-  const hasPointers = Object.keys(array.pointers ?? {}).length > 0;
 
-  // Derive active window/search bounds from explicit range or lo/hi / left/right pointers
+  const hasPointers = Object.keys(mergedPointers).length > 0;
+
   const inferredRange = useMemo<[number, number] | undefined>(() => {
     if (array.range) return array.range;
-    const p = array.pointers ?? {};
-    const lo = p.lo ?? p.low ?? p.left ?? p.l ?? p.L ?? p.start;
-    const hi = p.hi ?? p.high ?? p.right ?? p.r ?? p.R ?? p.end;
+    const lo = mergedPointers.lo ?? mergedPointers.low ?? mergedPointers.left ?? mergedPointers.l ?? mergedPointers.L ?? mergedPointers.start;
+    const hi = mergedPointers.hi ?? mergedPointers.high ?? mergedPointers.right ?? mergedPointers.r ?? mergedPointers.R ?? mergedPointers.end;
     if (typeof lo === "number" && typeof hi === "number" && lo <= hi) return [lo, hi];
     return undefined;
-  }, [array.range, array.pointers]);
+  }, [array.range, mergedPointers]);
 
   // FLIP animation for swapped/shifted cells
   useLayoutEffect(() => {
@@ -73,52 +94,17 @@ export function ArrayVisualizer({ array, variant = "array" }: { array: ArrayFram
     }
   }, [valueKeys]);
 
-  // Multi-lane pointer arrows anchored to cell geometry
-  useLayoutEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const pointerEntries = Object.entries(array.pointers ?? {});
-    const positionsPerCell = new Map<number, number>();
-    for (const [, index] of pointerEntries) positionsPerCell.set(index, (positionsPerCell.get(index) ?? 0) + 1);
-    const pointerLanes = Math.max(1, ...positionsPerCell.values());
-    track.style.paddingTop = `${28 + (pointerLanes - 1) * 27}px`;
-    const markers = new Map(Array.from(track.querySelectorAll<HTMLElement>("[data-pointer-name]"), (marker) => [marker.dataset.pointerName ?? "", marker]));
-    const next = new Map<string, PointerPosition>();
-    const laneByCell = new Map<number, number>();
-    for (const [name, index] of pointerEntries) {
-      const cell = track.querySelector<HTMLElement>(`[data-cell-index="${index}"]`);
-      const marker = markers.get(name);
-      if (!cell) continue;
-      const lane = laneByCell.get(index) ?? 0;
-      laneByCell.set(index, lane + 1);
-      const position = { x: cell.offsetLeft + cell.offsetWidth / 2, y: cell.offsetTop - 27 - lane * 27 };
-      if (marker) {
-        if (firstPointerLayout.current) marker.style.transition = "none";
-        marker.style.transform = `translate3d(calc(${position.x}px - 50%), ${position.y}px, 0)`;
-      }
-      next.set(name, position);
-    }
-    if (firstPointerLayout.current && next.size) {
-      firstPointerLayout.current = false;
-      void track.offsetHeight;
-      const raf = window.requestAnimationFrame(() => {
-        for (const marker of markers.values()) marker.style.transition = "";
-      });
-      return () => window.cancelAnimationFrame(raf);
-    }
-  }, [pointerSignature, valueKeys]);
-
   const variantHint =
     variant === "binary-search"
-      ? "dimmed = eliminated half · highlighted = active search range"
+      ? "dimmed = eliminated half · highlighted = active [lo..hi] range"
       : variant === "sliding-window"
-        ? "bracketed = active [L..R] window"
+        ? "highlighted = active [L..R] window"
         : variant === "string"
           ? "character tiles · 0-indexed"
           : variant === "dp-array"
             ? "1D DP state table · dp[i]"
             : hasPointers
-              ? "↓ shows the value each pointer checks"
+              ? "↓ shows active pointers"
               : "";
 
   return (
@@ -131,7 +117,9 @@ export function ArrayVisualizer({ array, variant = "array" }: { array: ArrayFram
         <div ref={trackRef} className="array-track-wrap">
           <div className="array-track" role="list" aria-label={array.label ?? "Array values"}>
             {values.map((value, index) => {
-              const pointers = Object.entries(array.pointers ?? {}).filter(([, valueIndex]) => valueIndex === index).map(([name]) => name);
+              const pointers = Object.entries(mergedPointers)
+                .filter(([, valueIndex]) => valueIndex === index)
+                .map(([name]) => name);
               const inRange = inferredRange ? index >= inferredRange[0] && index <= inferredRange[1] : false;
               const isEliminated = variant === "binary-search" && inferredRange !== undefined && !inRange;
               const state = array.active?.includes(index)
@@ -144,30 +132,29 @@ export function ArrayVisualizer({ array, variant = "array" }: { array: ArrayFram
                       ? "eliminated"
                       : "";
               return (
-                <div
-                  className={`array-cell ${state}`}
-                  data-motion-key={valueKeys[index]}
-                  data-cell-index={index}
-                  role="listitem"
-                  aria-label={`${array.label ?? "Value"} index ${index}: ${String(value)}${pointers.length ? `, ${pointers.join(", ")}` : ""}`}
-                  key={valueKeys[index]}
-                >
-                  <strong>{String(value)}</strong>
-                  <small>{variant === "dp-array" ? `dp[${index}]` : `index ${index}`}</small>
+                <div className="array-slot" key={valueKeys[index]}>
+                  <div className="cell-pointer-stack" aria-hidden="true">
+                    {pointers.map((name) => (
+                      <span key={name} className={`cell-ptr-badge ptr-${name.toLowerCase()}`}>
+                        {name}
+                        <ArrowDown size={11} strokeWidth={2.5} />
+                      </span>
+                    ))}
+                  </div>
+                  <div
+                    className={`array-cell ${state}`}
+                    data-motion-key={valueKeys[index]}
+                    data-cell-index={index}
+                    role="listitem"
+                    aria-label={`${array.label ?? "Value"} index ${index}: ${String(value)}${pointers.length ? `, ${pointers.join(", ")}` : ""}`}
+                  >
+                    <strong>{String(value)}</strong>
+                    <small>{variant === "dp-array" ? `dp[${index}]` : `[${index}]`}</small>
+                  </div>
                 </div>
               );
             })}
           </div>
-          {hasPointers && (
-            <div className="pointer-overlay" aria-hidden="true">
-              {Object.entries(array.pointers ?? {}).map(([name]) => (
-                <div key={name} data-pointer-name={name} className="pointer-marker">
-                  <span>{name}</span>
-                  <ArrowDown size={15} strokeWidth={2.5} />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       ) : (
         <p className="empty-state">This collection is empty at this step.</p>

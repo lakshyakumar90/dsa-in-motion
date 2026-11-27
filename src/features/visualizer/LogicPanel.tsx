@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, PencilLine, X } from "lucide-react";
+import hljs from "highlight.js/lib/core";
+import cpp from "highlight.js/lib/languages/cpp";
 import type { AnimationFrame, TraceMode } from "@/types/animation";
 import type { Approach } from "@/types/problem";
+
+hljs.registerLanguage("cpp", cpp);
 
 interface LogicLine { text: string; sourceLine?: number }
 
@@ -10,8 +14,6 @@ function isExecutableLine(text: string) {
   return !!line && !line.startsWith("//") && !line.startsWith("/*") && !line.startsWith("*") && !/^[{};]+$/.test(line) && !/^(?:class|struct)\s/.test(line) && !/^\w[\w\s:*&<>]*\s+\w+\([^;]*\)\s*\{?$/.test(line);
 }
 
-/** Select the C++ operation that best explains this frame when its trace has
- * no explicit source-line mapping (common in older tree and graph traces). */
 function inferActiveSourceLine(executable: LogicLine[], frame: AnimationFrame): number | undefined {
   const title = `${frame.title ?? ""} ${frame.message ?? ""}`.toLowerCase();
   const lineFor = (pattern: RegExp) => executable.find((line) => pattern.test(line.text));
@@ -62,7 +64,6 @@ function activeSourceLine(approach: Approach, frame: AnimationFrame) {
     : inferActiveSourceLine(executable, frame);
 }
 
-/** The compact notation intentionally follows the same operations as the full solution. */
 function mergeLogic(approach: Approach, frame: AnimationFrame): { lines: LogicLine[]; active?: number } {
   const activeLine = activeSourceLine(approach, frame);
   const activeSource = approach.cpp.split("\n")[(activeLine ?? 0) - 1] ?? "";
@@ -85,12 +86,12 @@ function sourceExcerpt(approach: Approach, frame: AnimationFrame, mapLine: boole
   const source = approach.cpp.split("\n");
   const executable = source.map((text, index) => ({ text, sourceLine: index + 1 })).filter(({ text }) => isExecutableLine(text));
   if (!mapLine) {
-    return { lines: executable.slice(0, 7), active: undefined };
+    return { lines: executable.slice(0, 8), active: undefined };
   }
   const activeSourceLineValue = activeSourceLineForExcerpt(executable, approach, frame);
   const activeIndex = executable.findIndex((line) => line.sourceLine === activeSourceLineValue);
-  const start = activeIndex < 0 ? 0 : Math.max(0, Math.min(activeIndex - 2, executable.length - 7));
-  const lines = executable.slice(start, start + 7);
+  const start = activeIndex < 0 ? 0 : Math.max(0, Math.min(activeIndex - 3, executable.length - 8));
+  const lines = executable.slice(start, start + 8);
   const visibleActive = lines.findIndex((line) => line.sourceLine === activeSourceLineValue);
   return { lines, active: visibleActive < 0 ? undefined : visibleActive + 1 };
 }
@@ -105,6 +106,14 @@ export function getLogicView(problemName: string, approach: Approach, frame: Ani
   if (problemName !== "Merge Sorted Arrays") return sourceExcerpt(approach, frame, true);
   const mergedLogic = mergeLogic(approach, frame);
   return mergedLogic.active === undefined ? sourceExcerpt(approach, frame, true) : mergedLogic;
+}
+
+function highlightCppLine(text: string): string {
+  try {
+    return hljs.highlight(text || " ", { language: "cpp" }).value;
+  } catch {
+    return text;
+  }
 }
 
 export function LogicPanel({ problemName, approach, frame, mode = "execution" }: { problemName: string; approach: Approach; frame: AnimationFrame; mode?: TraceMode }) {
@@ -134,7 +143,17 @@ export function LogicPanel({ problemName, approach, frame, mode = "execution" }:
       <p className="practice-note">Private scratchpad · edits stay in this browser view.</p>
       <textarea className="logic-practice" value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} aria-label="Practice editing the selected solution" />
     </> : <div className="logic-lines" role="list" aria-label="Algorithm lines">
-      {compact.lines.map((line, index) => <div key={`${line.sourceLine ?? index}-${line.text}`} role="listitem" className={`logic-line${!isConceptual && compact.active === index + 1 ? " active" : ""}`} aria-current={!isConceptual && compact.active === index + 1 ? "step" : undefined}><span className="logic-line-number">{line.sourceLine ?? index + 1}</span><code>{line.text}</code></div>)}
+      {compact.lines.map((line, index) => (
+        <div
+          key={`${line.sourceLine ?? index}-${line.text}`}
+          role="listitem"
+          className={`logic-line${!isConceptual && compact.active === index + 1 ? " active" : ""}`}
+          aria-current={!isConceptual && compact.active === index + 1 ? "step" : undefined}
+        >
+          <span className="logic-line-number">{line.sourceLine ?? index + 1}</span>
+          <code className="hljs" dangerouslySetInnerHTML={{ __html: highlightCppLine(line.text) }} />
+        </div>
+      ))}
     </div>}
     {isConceptual ? <p className="logic-disclaimer">Conceptual walkthrough — this trace explains the strategy and does not map the selected approach’s source lines.</p> : compact.active !== undefined && <p className="logic-active-note">Highlighted line explains the current animation step.</p>}
     {!compact.lines.length && <p className="logic-empty">See the full solution below the animation.</p>}

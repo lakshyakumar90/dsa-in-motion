@@ -1,0 +1,654 @@
+/* ==========================================================================
+   UI Polish, Typography Scale, Animation Player 4-Band Layout & Notes Sidebar
+   ========================================================================== */
+
+/* 1. Global Readable Typography Scale (zero 8px/9px/10px micro-text!) */
+body {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.eyebrow {
+  font-size: 12px !important;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+}
+
+.breadcrumbs {
+  font-size: 12.5px !important;
+}
+
+.sidebar-heading {
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+.sidebar-topic-title {
+  font-size: 11.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.sidebar-problem {
+  font-size: 13.5px !important;
+  padding: 8px 10px !important;
+}
+
+.sidebar-problem > span {
+  font-size: 12px !important;
+}
+
+.problem-statement,
+.hero-copy > p,
+.page-heading > p {
+  font-size: 15.5px !important;
+  line-height: 1.72;
+}
+
+.section-intro,
+.approach-idea,
+.accordion-content,
+.approach-steps li p,
+.complexity-reasons article p,
+.concept-main p,
+.invariant-box p,
+.pitfall p {
+  font-size: 14px !important;
+  line-height: 1.68;
+}
+
+.approach-step-number,
+.approach-badge,
+.difficulty,
+.approaches-count,
+.trace-mode,
+.ds-kind-pill,
+.ds-mode-tag {
+  font-size: 12px !important;
+}
+
+.complexity-pills span,
+.complexity-pills strong,
+.approach-card-metrics,
+.external-link,
+.problem-resources,
+.question-name small,
+.question-topic-meta,
+.result-count,
+.frame-count,
+.speed-select,
+.input-editor summary,
+.code-filebar,
+.code-help,
+.code-language-tabs button,
+.code-actions button {
+  font-size: 12.5px !important;
+}
+
+.question-name span,
+.question-topic-title,
+.approach-detail-header h3,
+.accordion-trigger {
+  font-size: 14.5px !important;
+}
+
+.topic-card p {
+  font-size: 13.5px !important;
+}
+
+.card-link,
+.topic-card-top,
+.topic-ds-chip,
+.hero-meta,
+.hero-note {
+  font-size: 12px !important;
+}
+
+/* 2. Animation Player 4-Band Layout */
+.player-shell {
+  margin-top: 20px;
+  border: 1px solid #2b2927;
+  border-radius: 14px;
+  background: #0b0b0d;
+  overflow: hidden;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+}
+
+.player-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #272523;
+  background: #101013;
+}
+
+.player-heading-left,
+.player-heading-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-heading strong {
+  font-size: 15px !important;
+  font-weight: 650;
+}
+
+.approach-meta {
+  font-size: 12.5px !important;
+  color: #b4afa8;
+}
+
+.player-approach-pill {
+  padding: 6px 12px;
+  font-size: 12.5px !important;
+}
+
+.player-progress {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid #1e1d1b;
+  background: #0d0d10;
+}
+
+.progress-caption {
+  font-size: 12px !important;
+  font-weight: 600;
+}
+
+/* Band 2: Clean 2-column Stage Grid (Visual Canvas Left | Code + Vars Right) */
+.player-stage-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+  gap: 18px;
+  padding: 20px;
+  align-items: stretch;
+  background: radial-gradient(ellipse at 35% 0%, rgba(230, 160, 99, 0.08), transparent 55%), #0b0b0d;
+}
+
+.visual-canvas-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 320px;
+  padding: 18px;
+  border: 1px solid #272523;
+  border-radius: 12px;
+  background: #111115;
+  overflow-x: auto;
+}
+
+.visual-canvas-box .visual-frame-stack {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.visual-canvas-box .viz-panel {
+  min-height: 0;
+  padding: 16px;
+  border: 1px solid #26252a;
+  border-radius: 10px;
+  background: #15151a;
+}
+
+.visual-canvas-box .viz-panel h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: #d4cfc8;
+  font-size: 12.5px !important;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.visual-canvas-box .viz-panel h3 .viz-legend {
+  margin-left: auto;
+  color: #9b968f;
+  font-size: 12px !important;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Give Trees & Graphs generous height so diagrams never look squashed */
+.tree-scroll svg,
+.graph-scroll svg {
+  min-height: 270px !important;
+  max-height: 360px !important;
+  width: 100%;
+}
+
+.ds-support-tray {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* Array Slots with Rock-Solid Inline Pointer Badges */
+.array-track-wrap {
+  padding-top: 4px !important;
+  overflow-x: auto;
+}
+
+.array-track {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px !important;
+  padding: 4px 2px;
+}
+
+.array-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.cell-pointer-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 24px;
+  justify-content: flex-end;
+}
+
+.cell-ptr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--primary) 65%, transparent);
+  background: color-mix(in srgb, var(--primary) 20%, #16161a);
+  color: #ffd7b0;
+  font: 700 11.5px/1.2 ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+.cell-ptr-badge.ptr-l,
+.cell-ptr-badge.ptr-left,
+.cell-ptr-badge.ptr-lo,
+.cell-ptr-badge.ptr-low,
+.cell-ptr-badge.ptr-slow,
+.cell-ptr-badge.ptr-i,
+.cell-ptr-badge.ptr-start {
+  border-color: rgba(56, 189, 248, 0.65);
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+.cell-ptr-badge.ptr-r,
+.cell-ptr-badge.ptr-right,
+.cell-ptr-badge.ptr-hi,
+.cell-ptr-badge.ptr-high,
+.cell-ptr-badge.ptr-fast,
+.cell-ptr-badge.ptr-j,
+.cell-ptr-badge.ptr-end {
+  border-color: rgba(244, 114, 182, 0.65);
+  background: rgba(244, 114, 182, 0.18);
+  color: #f9a8d4;
+}
+
+.cell-ptr-badge.ptr-mid,
+.cell-ptr-badge.ptr-write,
+.cell-ptr-badge.ptr-w {
+  border-color: rgba(52, 211, 153, 0.65);
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
+}
+
+.array-cell {
+  min-width: 56px !important;
+  min-height: 58px !important;
+  padding: 8px 10px !important;
+  border-radius: 9px !important;
+  background: #1a1a21 !important;
+  border: 1.5px solid #35343f !important;
+}
+
+.array-cell strong {
+  font-size: 15px !important;
+  font-weight: 700;
+  font-family: ui-monospace, monospace !important;
+}
+
+.array-cell small {
+  font-size: 11px !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+/* Linked List Pointer Row above Node */
+.ll-pointer-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  min-height: 22px;
+  margin-bottom: 6px;
+}
+
+.ll-ptr-tag {
+  font-size: 11px !important;
+  padding: 2px 7px !important;
+}
+
+.ll-node-val strong {
+  font-size: 14.5px !important;
+}
+
+.ll-node-val small,
+.ll-node-next small {
+  font-size: 10.5px !important;
+}
+
+/* Right Rail: Syntax-Highlighted Logic + Variables */
+.logic-rail-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.logic-card-wrap {
+  border: 1px solid #272523;
+  border-radius: 12px;
+  background: #0d1017;
+  overflow: hidden;
+}
+
+.logic-panel {
+  padding: 14px 16px !important;
+}
+
+.logic-header {
+  margin-bottom: 12px !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  color: #c8c3bc !important;
+}
+
+.logic-header button {
+  font-size: 12px !important;
+  padding: 5px 10px !important;
+}
+
+.logic-line {
+  grid-template-columns: 30px minmax(0, 1fr) !important;
+  padding: 4px 8px 4px 0 !important;
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.logic-line-number {
+  font-size: 12px !important;
+}
+
+.logic-active-note,
+.logic-disclaimer {
+  margin-top: 10px !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+}
+
+.vars-card-wrap {
+  padding: 14px 16px;
+  border: 1px solid #272523;
+  border-radius: 12px;
+  background: #111115;
+}
+
+.inspector-kicker {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #a8a39d;
+}
+
+.vars-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.var-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid #2d2c33;
+  border-radius: 7px;
+  background: #18181f;
+}
+
+.var-chip dt {
+  color: #9c9891;
+  font: 600 12px ui-monospace, monospace;
+}
+
+.var-chip dd {
+  margin: 0;
+  color: #f3f0eb;
+  font: 700 12.5px ui-monospace, monospace;
+}
+
+.var-chip.is-meta dd {
+  color: var(--primary);
+}
+
+/* Band 3: Outside the Stage Grid, Inside Parent .player-shell */
+.player-insights-band {
+  display: grid;
+  gap: 14px;
+  padding: 0 20px 18px;
+}
+
+.player-insights-band .step-explanation {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 16px 20px !important;
+  border: 1px solid #35302a !important;
+  border-radius: 11px !important;
+  background: #131215 !important;
+  overflow: visible !important;
+}
+
+.player-insights-band .step-overline {
+  font-size: 12px !important;
+  font-weight: 700;
+}
+
+.player-insights-band .step-explanation h3 {
+  margin: 6px 0 6px !important;
+  font-size: 16px !important;
+  font-weight: 650;
+  color: #f8f5f0;
+}
+
+.player-insights-band .step-explanation > p {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  color: #d2cdc6 !important;
+}
+
+.step-meta-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.step-meta-card {
+  padding: 14px 16px;
+  border: 1px solid #26252b;
+  border-radius: 10px;
+  background: #121216;
+}
+
+.step-meta-card span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--primary);
+  font: 700 11.5px/1.3 var(--font-sans);
+  letter-spacing: 0.06em;
+}
+
+.step-meta-card p {
+  margin: 0;
+  color: #cbc6be;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* Bottom Output / Result Panel */
+.player-insights-band .live-result-panel {
+  position: static !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 15px 18px !important;
+  border: 1px solid color-mix(in srgb, var(--success) 42%, #2a2a30) !important;
+  border-radius: 11px !important;
+  background: color-mix(in srgb, var(--success) 7%, #111316) !important;
+}
+
+.live-result-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.live-result-header span {
+  color: var(--success);
+  font: 700 12px var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.live-result-header p {
+  margin: 0;
+  color: #a9b5ae;
+  font-size: 12.5px;
+}
+
+.result-scalar {
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.result-output-cell {
+  flex: 0 0 auto !important;
+  min-width: 56px;
+  padding: 6px 10px;
+}
+
+.result-output-cell strong {
+  font-size: 14px !important;
+}
+
+.result-output-cell small {
+  font-size: 11px !important;
+}
+
+/* 3. Notes Hub Sidebar — Compact, Clean, Zero Huge Scrollbar */
+.notes-study-layout {
+  grid-template-columns: 272px minmax(0, 1fr) !important;
+  gap: 24px !important;
+}
+
+.notes-topic-rail {
+  position: sticky !important;
+  top: 84px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  gap: 4px !important;
+  padding: 10px !important;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.notes-topic-btn {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+  padding: 8px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.notes-topic-btn:hover {
+  background: var(--secondary) !important;
+}
+
+.notes-topic-btn.is-active {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border)) !important;
+  background: color-mix(in srgb, var(--primary) 13%, var(--card)) !important;
+}
+
+.notes-topic-num {
+  padding-top: 0 !important;
+  font-size: 12px !important;
+  min-width: 22px;
+}
+
+.notes-topic-btn strong {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 13.5px !important;
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1020px) {
+  .player-stage-grid {
+    grid-template-columns: 1fr;
+  }
+  .step-meta-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .notes-topic-rail {
+    position: static !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+}

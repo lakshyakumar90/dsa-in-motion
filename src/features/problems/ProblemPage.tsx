@@ -19,7 +19,7 @@ const fallbackApproach = (name: string, solution: NonNullable<(typeof problems)[
 
 export function ProblemPage({ problemId }: { problemId: string }) {
   const problem = problems.find((item) => item.id === problemId);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(2);
   const [solution, setSolution] = useState<Solution>();
   const [revision, setRevision] = useState(0);
   const [note, setNote] = useState(() => readStorage<Record<string, string>>("dsa-motion-notes", {})[problemId] ?? "");
@@ -29,7 +29,7 @@ export function ProblemPage({ problemId }: { problemId: string }) {
 
   useEffect(() => {
     let current = true;
-    setSelectedIndex(0);
+    setSelectedIndex(2);
     setSolution(undefined);
     setNote(readStorage<Record<string, string>>("dsa-motion-notes", {})[problemId] ?? "");
     if (problem) void loadSolution(problem.name).then((value) => { if (current) setSolution(value); });

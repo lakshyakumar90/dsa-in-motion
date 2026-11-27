@@ -114,10 +114,7 @@ export function NotesPage() {
                 onClick={() => setSelectedTopic(idx)}
               >
                 <span className="notes-topic-num">{String(idx + 1).padStart(2, "0")}</span>
-                <div>
-                  <strong>{item.title}</strong>
-                  <small>{item.dsTag}</small>
-                </div>
+                <strong>{item.title}</strong>
               </button>
             ))}
           </aside>

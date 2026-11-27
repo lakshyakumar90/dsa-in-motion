@@ -23,7 +23,41 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
   const kind = dsKind ?? meta.kind;
   const nonResultArrays = (frame.arrays ?? []).filter((arr) => !isResultArrayLabel(arr.label));
 
-  // 1. Tree / BST / Heap
+  // 1. Linked List (supports BOTH frame.nodes/edges AND frame.arrays!)
+  if (kind === "linked-list") {
+    const isReversing = /reverse/i.test(problemName) || /reverse/i.test(frame.title ?? "");
+    const hasCycle = /cycle/i.test(problemName) && /cycle|meet|detected/i.test(`${frame.title ?? ""} ${frame.message ?? ""}`);
+    const hasNodes = Boolean(frame.nodes?.length);
+    return (
+      <div className="visual-frame-stack">
+        {hasNodes ? (
+          <LinkedListVisualizer
+            nodes={frame.nodes}
+            edges={frame.edges}
+            vars={frame.vars}
+            label={frame.graphLabel ?? "Linked List"}
+            reversed={isReversing}
+            hasCycle={hasCycle}
+          />
+        ) : null}
+        {nonResultArrays.map((arr, idx) => (
+          <LinkedListVisualizer
+            key={`${arr.label ?? "ll"}-${idx}`}
+            array={arr}
+            vars={frame.vars}
+            reversed={isReversing}
+            hasCycle={hasCycle}
+          />
+        ))}
+        {!hasNodes && !nonResultArrays.length && !frame.matrix && (
+          <LinkedListVisualizer array={{ label: "Linked List", values: [] }} />
+        )}
+        {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
+      </div>
+    );
+  }
+
+  // 2. Tree / BST / Heap
   if (kind === "tree" || kind === "bst" || kind === "heap") {
     const isHeap = kind === "heap";
     const isBst = kind === "bst";
@@ -33,70 +67,47 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
     const hasNodes = Boolean(frame.nodes?.length);
 
     return (
-      <div className="visual-frame-stack graph-frame-stack">
-        <div className="graph-support-layout">
-          <TreeVisualizer
-            nodes={hasNodes ? frame.nodes : undefined}
-            edges={hasNodes ? frame.edges : undefined}
-            heapArray={!hasNodes ? heapArray : undefined}
-            label={frame.graphLabel ?? meta.shortLabel}
-            isBst={isBst}
-            isHeap={isHeap}
-          />
-          {nonResultArrays.length > 0 && (
-            <div className="graph-support-arrays" aria-label="Supporting traversal state">
-              {nonResultArrays.map((arr, idx) =>
-                /stack|queue|bfs|dfs/i.test(arr.label ?? "") ? (
-                  <StackQueueVisualizer array={arr} key={`${arr.label ?? "sq"}-${idx}`} />
-                ) : (
-                  <ArrayVisualizer array={arr} variant="array" key={`${arr.label ?? "arr"}-${idx}`} />
-                )
-              )}
-            </div>
-          )}
-        </div>
+      <div className="visual-frame-stack">
+        <TreeVisualizer
+          nodes={hasNodes ? frame.nodes : undefined}
+          edges={hasNodes ? frame.edges : undefined}
+          heapArray={!hasNodes ? heapArray : undefined}
+          label={frame.graphLabel ?? meta.shortLabel}
+          isBst={isBst}
+          isHeap={isHeap}
+        />
+        {nonResultArrays.length > 0 && (
+          <div className="ds-support-tray" aria-label="Supporting traversal state">
+            {nonResultArrays.map((arr, idx) =>
+              /stack|queue|bfs|dfs/i.test(arr.label ?? "") ? (
+                <StackQueueVisualizer array={arr} key={`${arr.label ?? "sq"}-${idx}`} />
+              ) : (
+                <ArrayVisualizer array={arr} variant="array" vars={frame.vars} key={`${arr.label ?? "arr"}-${idx}`} />
+              )
+            )}
+          </div>
+        )}
         {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
       </div>
     );
   }
 
-  // 2. Graph (or any frame with explicit nodes/edges)
+  // 3. Graph (or any frame with explicit nodes/edges)
   if (kind === "graph" || frame.nodes?.length) {
     return (
-      <div className="visual-frame-stack graph-frame-stack">
-        <div className="graph-support-layout">
-          <GraphVisualizer nodes={frame.nodes ?? []} edges={frame.edges ?? []} label={frame.graphLabel} />
-          {nonResultArrays.length > 0 && (
-            <div className="graph-support-arrays" aria-label="Supporting traversal state">
-              {nonResultArrays.map((arr, idx) =>
-                /queue|stack|frontier/i.test(arr.label ?? "") ? (
-                  <StackQueueVisualizer array={arr} key={`${arr.label ?? "sq"}-${idx}`} />
-                ) : (
-                  <ArrayVisualizer array={arr} variant="array" key={`${arr.label ?? "arr"}-${idx}`} />
-                )
-              )}
-            </div>
-          )}
-        </div>
-        {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
-      </div>
-    );
-  }
-
-  // 3. Linked List
-  if (kind === "linked-list") {
-    const isReversing = /reverse/i.test(problemName) || /reverse/i.test(frame.title ?? "");
-    const hasCycle = /cycle/i.test(problemName) && /cycle|meet|detected/i.test(`${frame.title ?? ""} ${frame.message ?? ""}`);
-    return (
       <div className="visual-frame-stack">
-        {nonResultArrays.map((arr, idx) => (
-          <LinkedListVisualizer
-            key={`${arr.label ?? "ll"}-${idx}`}
-            array={arr}
-            reversed={isReversing}
-            hasCycle={hasCycle}
-          />
-        ))}
+        <GraphVisualizer nodes={frame.nodes ?? []} edges={frame.edges ?? []} label={frame.graphLabel} />
+        {nonResultArrays.length > 0 && (
+          <div className="ds-support-tray" aria-label="Supporting traversal state">
+            {nonResultArrays.map((arr, idx) =>
+              /queue|stack|frontier/i.test(arr.label ?? "") ? (
+                <StackQueueVisualizer array={arr} key={`${arr.label ?? "sq"}-${idx}`} />
+              ) : (
+                <ArrayVisualizer array={arr} variant="array" vars={frame.vars} key={`${arr.label ?? "arr"}-${idx}`} />
+              )
+            )}
+          </div>
+        )}
         {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
       </div>
     );
@@ -117,9 +128,9 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
     return (
       <div className="visual-frame-stack">
         {inputArrays.map((arr, idx) => (
-          <ArrayVisualizer array={arr} variant="array" key={`in-${arr.label ?? idx}-${idx}`} />
+          <ArrayVisualizer array={arr} variant="array" vars={frame.vars} key={`in-${arr.label ?? idx}-${idx}`} />
         ))}
-        {stackQueueArrays.length > 0 ? (
+        {stackQueueArrays.length > 0 && (
           <div className="sq-pair-grid">
             {stackQueueArrays.map((arr, idx) => (
               <StackQueueVisualizer
@@ -129,8 +140,6 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
               />
             ))}
           </div>
-        ) : (
-          !inputArrays.length && !frame.matrix && <p className="empty-state">No stack or queue items yet.</p>
         )}
         {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
       </div>
@@ -156,6 +165,7 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
           <ArrayVisualizer
             array={arr}
             variant={/dp|memo|ways|cost|table|tails/i.test(arr.label ?? "") ? "dp-array" : "array"}
+            vars={frame.vars}
             key={`${arr.label ?? "dp"}-${idx}`}
           />
         ))}
@@ -176,7 +186,7 @@ export function VisualizerRouter({ problemName, frame, dsKind }: VisualizerRoute
   return (
     <div className="visual-frame-stack">
       {nonResultArrays.map((arr, idx) => (
-        <ArrayVisualizer array={arr} variant={arrayVariant} key={`${arr.label ?? "array"}-${idx}`} />
+        <ArrayVisualizer array={arr} variant={arrayVariant} vars={frame.vars} key={`${arr.label ?? "array"}-${idx}`} />
       ))}
       {frame.matrix && <MatrixDPVisualizer matrix={frame.matrix} />}
     </div>

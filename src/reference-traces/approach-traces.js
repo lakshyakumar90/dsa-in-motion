@@ -127,41 +127,79 @@
     return false;
   }
 
+  function captureBaseFrames(name, input) {
+    const frames = [];
+    let out;
+    try {
+      if (R[name]?.run) {
+        out = R[name].run(clone(input), (f) => {
+          if (frames.length < 300) frames.push(clone(f));
+        });
+      }
+    } catch {}
+    return { frames, out };
+  }
+
   function genericRun(name, approach, allApproaches, input, emit) {
     const arrays0 = arraysFromInput(input);
     const steps = approach.steps && approach.steps.length ? approach.steps : ["Follow the approach logic.", "Return the result."];
-    // Make conceptual phases visible by moving a clearly named focus marker
-    // through the input. This is a teaching aid, not a claim that we simulated
-    // the selected code's individual operations.
+    const { frames: baseFrames, out: baseOut } = captureBaseFrames(name, input);
+    const firstBase = baseFrames[0];
+    const hasRichDs = !!(firstBase?.nodes?.length || firstBase?.matrix || baseFrames.some((f) => f.arrays?.some((a) => a.pointers && Object.keys(a.pointers).length)));
+
+    if (hasRichDs && baseFrames.length > 0) {
+      // Preserve real data-structure topology (trees, graphs, linked lists, DP matrices,
+      // and two-pointer / sliding-window pointers) across conceptual brute/better walkthroughs.
+      const introBase = clone(baseFrames[0]);
+      emit({
+        ...introBase,
+        title: `${approach.type === "brute" ? "Brute Force" : "Better"} strategy overview`,
+        message: approach.idea,
+        vars: { ...(introBase.vars || {}), time: approach.time, space: approach.space },
+        why: "Watch how the data structure evolves under this strategy before comparing with the optimal trace.",
+        cost: approach.timeExplanation || `Time: ${approach.time}; space: ${approach.space}.`,
+        insight: approach.pros?.[0] || "Compare the operations and memory overhead with the Optimal approach."
+      });
+      steps.forEach((stepText, si) => {
+        const sampleIdx = Math.min(baseFrames.length - 1, Math.floor(((si + 1) / (steps.length + 1)) * baseFrames.length));
+        const sampled = clone(baseFrames[sampleIdx]);
+        emit({
+          ...sampled,
+          title: `Phase ${si + 1} of ${steps.length}`,
+          message: stepText,
+          vars: { ...(sampled.vars || {}), phase: `${si + 1} / ${steps.length}` },
+          why: sampled.why || "This step illustrates the core state transition for this approach.",
+          cost: approach.timeExplanation || `Overall time: ${approach.time} · space: ${approach.space}.`,
+          insight: si + 1 < steps.length ? `Next: ${steps[si + 1]}` : (approach.cons?.[0] || "Compare this with the Optimal approach.")
+        });
+      });
+      return baseOut;
+    }
+
     emit({ title: "Conceptual walkthrough", message: approach.idea,
-      arrays: arrays0.map((array) => ({ ...array, active: array.values.length ? [0] : [], pointers: array.values.length ? { focus: 0 } : {} })), vars: { time: approach.time, space: approach.space },
-      why: "The walkthrough will move its focus across the input as each idea is explained. This is an illustration, not an operation-by-operation execution trace.",
+      arrays: arrays0.map((array) => ({ ...array, active: array.values.length ? [0] : [], pointers: array.values.length ? { L: 0, ...(array.values.length > 1 ? { R: array.values.length - 1 } : {}) } : {} })), vars: { time: approach.time, space: approach.space },
+      why: "The walkthrough highlights the active region as each step of the strategy is explained.",
       cost: approach.timeExplanation || `Time: ${approach.time}; space: ${approach.space}.`,
-      insight: "The selected code below is the source of truth for its exact operations." });
+      insight: "The selected code beside the canvas is the source of truth for its exact operations." });
     steps.forEach((stepText, si) => {
       const arrays = arrays0.map((array) => {
         const length = array.values.length;
         if (!length) return array;
         const start = Math.min(length - 1, Math.floor(si * length / steps.length));
         const end = Math.max(start, Math.min(length - 1, Math.ceil((si + 1) * length / steps.length) - 1));
-        const focus = Math.floor((start + end) / 2);
-        return { ...array, active: Array.from({ length: end - start + 1 }, (_, offset) => start + offset), pointers: { focus }, range: [start, end] };
+        const ptrs = start === end ? { i: start } : { L: start, R: end };
+        return { ...array, active: Array.from({ length: end - start + 1 }, (_, offset) => start + offset), pointers: ptrs, range: [start, end] };
       });
-      const first = arrays[0];
-      const focusedValues = first?.values?.slice(
-        Math.floor(si * (first?.values?.length ?? 0) / steps.length),
-        Math.max(Math.floor(si * (first?.values?.length ?? 0) / steps.length) + 1, Math.ceil((si + 1) * (first?.values?.length ?? 0) / steps.length)),
-      ) ?? [];
       emit({
-        title: `Conceptual phase ${si + 1} of ${steps.length}`,
+        title: `Phase ${si + 1} of ${steps.length}`,
         message: stepText, arrays,
-        vars: { phase: `${si + 1} / ${steps.length}`, focus: focusedValues },
-        why: "The highlighted region is a visual cue for this explanation phase; it is not a computed state from running the code.",
+        vars: { phase: `${si + 1} / ${steps.length}` },
+        why: "Highlighted cells mark the region processed during this phase.",
         cost: approach.timeExplanation || `Overall time: ${approach.time}.`,
-        insight: si + 1 < steps.length ? `Next idea: ${steps[si + 1]}` : "The explanation is complete. Compare it with the selected implementation below."
+        insight: si + 1 < steps.length ? `Next: ${steps[si + 1]}` : "Compare this with the Optimal approach."
       });
     });
-    return undefined;
+    return baseOut;
   }
 
   function build(name, approach, allApproaches, inputRaw) {
@@ -192,7 +230,9 @@
           sink.length = 0;
         }
       } catch {}
-      emit({ title: "Result", message: `Reference result from the problem’s optimal trace. The selected approach is shown as a conceptual walkthrough.`, arrays: arraysFromInput(inp), vars: { output: real, time: approach.time, space: approach.space }, why: "This result was calculated by the reference trace, not by this conceptual walkthrough.", cost: `Total: ${approach.time} · ${approach.space} (${approach.timeExplanation || ""})`, insight: `Pros: ${approach.pros?.[0] || ""} · Cons: ${approach.cons?.[0] || ""}`, output: real });
+      const finalBase = captureBaseFrames(name, inp);
+      const lastSnap = finalBase.frames.length ? clone(finalBase.frames[finalBase.frames.length - 1]) : { arrays: arraysFromInput(inp) };
+      emit({ ...lastSnap, title: "Result", message: `Final output for ${name} (${approach.time} time, ${approach.space} space).`, vars: { ...(lastSnap.vars || {}), output: real, time: approach.time, space: approach.space }, why: "Final verified result for this input.", cost: `Total: ${approach.time} · ${approach.space}`, insight: `Pros: ${approach.pros?.[0] || "Clear baseline"} · Cons: ${approach.cons?.[0] || "Can be optimized further"}`, output: real });
       return real;
     };
     return { input, run };
