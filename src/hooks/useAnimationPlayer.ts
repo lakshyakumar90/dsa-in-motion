@@ -1,41 +1,87 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createTrace, ensureTraceRuntime } from "@/algorithms/traceRegistry";
-import type { AnimationFrame, PlaybackStatus, TraceMode } from "@/types/animation";
+import type { AnimationFrame, ArrayFrame, PlaybackStatus, TraceMode } from "@/types/animation";
 import type { Approach } from "@/types/problem";
 
-function makeInitialFrame(input: Record<string, unknown>, first?: AnimationFrame): AnimationFrame {
-  // Keep a graph's original topology, but remove traversal highlights and arrows.
-  if (first?.nodes?.length) return {
-    title: "Initial graph",
-    message: "This is the graph before the search starts. No nodes have been visited yet.",
-    graphLabel: first.graphLabel,
-    nodes: first.nodes.map((node) => ({ ...node, state: "muted" })),
-    edges: (first.edges ?? []).map((edge) => ({ ...edge, state: "idle" })),
-  };
-  if (first?.matrix) return {
-    title: "Initial table",
-    message: "The table is shown before the first algorithm step changes its cells.",
-    matrix: { ...first.matrix, active: [], done: [] },
+function makeInitialFrame(input: Record<string, unknown>, frames: AnimationFrame[]): AnimationFrame {
+  const first = frames[0];
+  const firstWithNodes = frames.find((f) => f.nodes?.length);
+  const firstWithMatrix = frames.find((f) => f.matrix?.values?.length);
+  const firstWithArrays = frames.find((f) => f.arrays?.some((a) => (a.values?.length ?? 0) > 0));
+
+  // Extract scalar vars from input so the Live Variables card is populated before Play
+  const inputScalars: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input ?? {})) {
+    if (v !== undefined && (v === null || typeof v !== "object")) inputScalars[k] = v;
+  }
+
+  const baseMeta = {
+    why: "Initial problem state before the first operation runs.",
+    cost: "0 operations executed yet — press Play or Next step to trace.",
+    insight: "Inspect the starting data structure and input parameters, then step forward.",
+    vars: { ...inputScalars, ...(first?.vars ?? {}) },
   };
 
-  const arrays = Object.entries(input).flatMap(([label, value]) => {
-    if (typeof value === "string") return [{ label, values: [...value] }];
-    if (Array.isArray(value) && value.every((item) => item === null || typeof item !== "object")) return [{ label, values: value }];
+  // 1. Keep a tree, graph, or linked list's original topology visible immediately on load
+  if (firstWithNodes?.nodes?.length) {
+    const supportArrays: ArrayFrame[] = (firstWithNodes.arrays ?? [])
+      .filter((a) => (a.values?.length ?? 0) > 0)
+      .map((a) => ({ ...a, active: [], done: [], pointers: {} }));
+    return {
+      ...baseMeta,
+      title: "Initial state",
+      message: "Review the starting structure before the algorithm begins, then press Play or Next step.",
+      graphLabel: firstWithNodes.graphLabel,
+      nodes: firstWithNodes.nodes.map((node) => ({ ...node, state: "muted" })),
+      edges: (firstWithNodes.edges ?? []).map((edge) => ({ ...edge, state: "idle" })),
+      ...(supportArrays.length ? { arrays: supportArrays } : {}),
+    };
+  }
+
+  // 2. Keep a 2D DP / grid matrix visible immediately on load
+  if (firstWithMatrix?.matrix) {
+    const supportArrays: ArrayFrame[] = (firstWithMatrix.arrays ?? [])
+      .filter((a) => (a.values?.length ?? 0) > 0)
+      .map((a) => ({ ...a, active: [], done: [], pointers: {} }));
+    return {
+      ...baseMeta,
+      title: "Initial table",
+      message: "Review the starting table before the first step updates its cells.",
+      matrix: { ...firstWithMatrix.matrix, active: [], done: [] },
+      ...(supportArrays.length ? { arrays: supportArrays } : {}),
+    };
+  }
+
+  // 3. Extract primitive arrays / strings from input, falling back to first non-empty frame arrays
+  const inputArrays: ArrayFrame[] = Object.entries(input ?? {}).flatMap(([label, value]) => {
+    if (typeof value === "string" && value.length > 0) return [{ label, values: [...value] }];
+    if (Array.isArray(value) && value.length > 0 && value.every((item) => item === null || typeof item !== "object")) {
+      return [{ label, values: [...value] }];
+    }
     return [];
   });
-  const cleanArrays = arrays.length ? arrays : (first?.arrays ?? [])
-    .filter((array) => (array.values?.length ?? 0) > 0)
-    .map((array) => ({ ...array, active: [], done: [], range: undefined, pointers: undefined }));
-  // Output collections exist from frame zero, even though they begin empty.
-  // This keeps an array transformation's result visible beside its input
-  // before the first algorithm operation has run.
-  const emptyResultArrays = (first?.arrays ?? [])
+
+  const cleanArrays: ArrayFrame[] = inputArrays.length
+    ? inputArrays
+    : (firstWithArrays?.arrays ?? [])
+        .filter((array) => (array.values?.length ?? 0) > 0)
+        .map((array) => ({ ...array, active: [], done: [], range: undefined, pointers: undefined }));
+
+  // 4. Scalar-only inputs (e.g., Sum, Power of Two, Climbing Stairs) — never leave canvas empty
+  const fallbackScalarArrays: ArrayFrame[] =
+    !cleanArrays.length && Object.keys(inputScalars).length > 0
+      ? [{ label: "Input parameters", values: Object.entries(inputScalars).map(([k, v]) => `${k} = ${String(v)}`) }]
+      : [];
+
+  const emptyResultArrays: ArrayFrame[] = (first?.arrays ?? [])
     .filter((array) => /result|output|answer|merged|moved values|reversed result|sorted visits|window maxima|itinerary|topological order|partition lengths|days to wait|valid prefix|unique|retained prefix|kept values/i.test(array.label ?? ""))
     .map((array) => ({ label: array.label, values: [] as unknown[], active: [], done: [] }));
+
   return {
+    ...baseMeta,
     title: "Initial input",
-    message: "Nothing has run yet. Review the original values, then press Play or Next step to begin.",
-    arrays: [...cleanArrays, ...emptyResultArrays],
+    message: "Nothing has run yet. Review the starting values, then press Play or Next step to begin.",
+    arrays: [...cleanArrays, ...fallbackScalarArrays, ...emptyResultArrays],
   };
 }
 
@@ -66,16 +112,12 @@ export function useAnimationPlayer(problemName: string, approach: Approach, appr
   const defaultInput = useMemo(() => {
     const trace = globalThis.PROBLEM_TRACES?.[problemName];
     const input = trace ? structuredClone(trace.input) : {};
-    // Match the ChaiCode Merge Sorted Array example so pointer and code-line
-    // states can be compared directly with its walkthrough.
     if (problemName === "Merge Sorted Arrays") {
       input.nums1 = [1, 4, 7, 0, 0, 0];
       input.m = 3;
       input.nums2 = [2, 3, 6];
       input.n = 3;
     }
-    // Match the public Remove Duplicates walkthrough's duplicate-heavy array
-    // so the learner can see both append and skip operations immediately.
     if (problemName === "Remove Duplicates" && Array.isArray(input.nums)) input.nums = [1, 1, 2, 2, 2, 3, 4, 4];
     return input;
   }, [problemName, ready]);
@@ -96,9 +138,7 @@ export function useAnimationPlayer(problemName: string, approach: Approach, appr
     catch (cause) { return { error: cause instanceof Error ? cause.message : "Could not build this trace." }; }
   }, [ready, problemName, approach, approaches, inputKey]);
   const sourceFrames = trace && "frames" in trace ? trace.frames : [];
-  // Keep the topology visible across narration/result-only frames. A handful
-  // of tree and graph traces emit a final answer frame without repeating the
-  // nodes, which used to make the diagram disappear at that point.
+
   const frames = useMemo(() => {
     const firstGraph = sourceFrames.find((candidate) => candidate.nodes?.length);
     if (!firstGraph?.nodes?.length) return sourceFrames;
@@ -122,8 +162,6 @@ export function useAnimationPlayer(problemName: string, approach: Approach, appr
   useEffect(() => { setIndex(0); setStatus("idle"); setStarted(false); setError(trace && "error" in trace ? trace.error : null); }, [trace]);
   useEffect(() => {
     if (status !== "playing" || frames.length < 2) return;
-    // Schedule one frame at a time so rendering work never causes a repeating
-    // interval to drift away from the selected playback speed.
     const timer = window.setTimeout(() => {
       if (index >= frames.length - 1) setStatus("completed");
       else setIndex(index + 1);
@@ -131,7 +169,7 @@ export function useAnimationPlayer(problemName: string, approach: Approach, appr
     return () => window.clearTimeout(timer);
   }, [status, frames.length, speed, index]);
 
-  const initialFrame = useMemo(() => makeInitialFrame(input, frames[0]), [inputKey, frames]);
+  const initialFrame = useMemo(() => makeInitialFrame(input, frames), [inputKey, frames]);
   const frame = !ready || frames.length === 0 ? undefined : started ? frames[index] : initialFrame;
 
   const pause = useCallback(() => setStatus((value) => value === "playing" ? "paused" : value), []);

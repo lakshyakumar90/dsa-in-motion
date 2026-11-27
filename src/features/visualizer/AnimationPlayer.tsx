@@ -196,28 +196,20 @@ export function AnimationPlayer({ problemName, approach, approaches, selectedInd
           <div className="player-insights-band">
             <StepExplanation frame={frame} index={player.index} total={player.frames.length} started={player.started} logicLine={logicLine} />
 
-            {(frame.why || frame.cost || frame.insight) && (
-              <div className="step-meta-cards" aria-label="Why, cost, and key insight">
-                {frame.why && (
-                  <div className="step-meta-card">
-                    <span>WHY THIS STEP</span>
-                    <p>{frame.why}</p>
-                  </div>
-                )}
-                {frame.cost && (
-                  <div className="step-meta-card">
-                    <span>COMPLEXITY & COST</span>
-                    <p>{frame.cost}</p>
-                  </div>
-                )}
-                {frame.insight && (
-                  <div className="step-meta-card">
-                    <span>REMEMBER</span>
-                    <p>{frame.insight}</p>
-                  </div>
-                )}
+            <div className="step-meta-cards" aria-label="Why, cost, and key insight">
+              <div className="step-meta-card">
+                <span>WHY THIS STEP</span>
+                <p>{frame.why || "Follow how this step advances the algorithm toward the final answer."}</p>
               </div>
-            )}
+              <div className="step-meta-card">
+                <span>COMPLEXITY & COST</span>
+                <p>{frame.cost || `${approach.time} time · ${approach.space} space.`}</p>
+              </div>
+              <div className="step-meta-card">
+                <span>REMEMBER</span>
+                <p>{frame.insight || approach.idea}</p>
+              </div>
+            </div>
 
             <LiveResultPanel
               problemName={problemName}

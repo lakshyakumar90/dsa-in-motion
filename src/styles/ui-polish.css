@@ -652,3 +652,101 @@ body {
     gap: 6px !important;
   }
 }
+
+/* ==========================================================================
+   Fixed-Dimension Zero-Layout-Shift Player Geometry
+   Prevents shrinking/expanding as frames change during playback
+   ========================================================================== */
+.player-stage-grid {
+  height: 440px !important;
+  min-height: 440px !important;
+  max-height: 440px !important;
+  align-items: stretch !important;
+}
+
+.visual-canvas-box {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+  justify-content: center !important;
+  scrollbar-width: thin;
+}
+
+.logic-rail-box {
+  display: grid !important;
+  grid-template-rows: 268px minmax(0, 1fr) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  gap: 12px !important;
+}
+
+.logic-card-wrap {
+  height: 268px !important;
+  min-height: 268px !important;
+  max-height: 268px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+}
+
+.vars-card-wrap {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+}
+
+.player-insights-band .step-explanation {
+  height: 112px !important;
+  min-height: 112px !important;
+  max-height: 112px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+}
+
+.step-meta-cards {
+  height: 108px !important;
+  min-height: 108px !important;
+  max-height: 108px !important;
+}
+
+.step-meta-card {
+  height: 100% !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+}
+
+.player-insights-band .live-result-panel {
+  height: 96px !important;
+  min-height: 96px !important;
+  max-height: 96px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1020px) {
+  .player-stage-grid {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .visual-canvas-box {
+    height: 360px !important;
+    min-height: 360px !important;
+    max-height: 360px !important;
+  }
+  .logic-rail-box {
+    height: auto !important;
+    max-height: none !important;
+    grid-template-rows: 250px 120px !important;
+  }
+  .step-meta-cards {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .step-meta-card {
+    height: 96px !important;
+  }
+}
