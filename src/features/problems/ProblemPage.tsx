@@ -178,7 +178,7 @@ export function ProblemPage({ problemId }: { problemId: string }) {
       <section className="learning-section" aria-labelledby="solution-code-title">
         <div className="section-heading compact"><div><h2 id="solution-code-title">Full solution</h2></div></div>
         <p className="section-intro">Explore the complete C++, JavaScript, and Python implementation for the selected approach.</p>
-        <CodeViewer approach={approach} />
+        <CodeViewer approach={approach} example={solution.example} />
       </section>
 
       <section className="learning-section" aria-labelledby="complexity-overview-title">

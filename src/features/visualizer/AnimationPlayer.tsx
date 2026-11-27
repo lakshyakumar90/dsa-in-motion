@@ -5,6 +5,7 @@ import { useAnimationPlayer } from "@/hooks/useAnimationPlayer";
 import type { Approach } from "@/types/problem";
 import { getLogicView, LogicPanel } from "./LogicPanel";
 import { isResultArrayLabel, VisualizerRouter } from "./VisualizerRouter";
+import { InputContextBar } from "./InputContextBar";
 import { StepExplanation } from "./StepExplanation";
 import { prettyValue } from "@/lib/animationUtils";
 import { Button } from "@/components/ui/button";
@@ -169,7 +170,10 @@ export function AnimationPlayer({ problemName, approach, approaches, selectedInd
           {/* Band 2: Clean 2-column Animation Canvas + Synchronized Pseudocode / Variables */}
           <div className="player-stage-grid">
             <div className="visual-canvas-box">
-              <VisualizerRouter problemName={problemName} frame={frame} dsKind={dsMeta.kind} />
+              <InputContextBar input={player.input} frame={frame} started={player.started} />
+              <div className="visual-canvas-body">
+                <VisualizerRouter problemName={problemName} frame={frame} dsKind={dsMeta.kind} />
+              </div>
             </div>
 
             <aside className="logic-rail-box">

@@ -116,14 +116,53 @@ function highlightCppLine(text: string): string {
   }
 }
 
+/** Build a concrete, human-friendly worked example (e.g. "2 + 7 = 9") for the
+ * currently executing line from live frame variables and array values. */
+function buildLiveExampleComment(frame: AnimationFrame): string | null {
+  const vars = frame.vars ?? {};
+  // Direct arithmetic examples from vars when present (e.g., a + b = sum, left + right = sum)
+  if (typeof vars.a === "number" && typeof vars.b === "number") {
+    return `e.g. ${vars.a} + ${vars.b} = ${vars.a + vars.b}`;
+  }
+  if (typeof vars.sum === "number" && typeof vars.target === "number") {
+    const rel = vars.sum === vars.target ? "==" : vars.sum < vars.target ? "<" : ">";
+    return `sum = ${vars.sum} ${rel} target (${vars.target})`;
+  }
+  if (typeof vars.left === "number" && typeof vars.right === "number" && typeof vars.isNew === "boolean") {
+    return `${vars.right} ${vars.isNew ? "!=" : "=="} ${vars.left}`;
+  }
+  // Show concrete active array pointer values (e.g. "nums[0] = 2, nums[3] = 15")
+  const ptrParts: string[] = [];
+  for (const arr of frame.arrays ?? []) {
+    const vals = arr.values ?? [];
+    for (const [pName, idx] of Object.entries(arr.pointers ?? {})) {
+      if (typeof idx === "number" && idx >= 0 && idx < vals.length) {
+        ptrParts.push(`${pName}=${idx} (${arr.label ?? "arr"}[${idx}]=${String(vals[idx])})`);
+      }
+    }
+  }
+  if (ptrParts.length > 0) return ptrParts.slice(0, 2).join(" · ");
+
+  // Fallback to top 3 scalar vars
+  const scalarParts = Object.entries(vars)
+    .filter(([, v]) => v !== undefined && (v === null || typeof v !== "object"))
+    .slice(0, 3)
+    .map(([k, v]) => `${k}=${String(v)}`);
+  if (scalarParts.length > 0) return scalarParts.join(", ");
+  return null;
+}
+
 export function LogicPanel({ problemName, approach, frame, mode = "execution" }: { problemName: string; approach: Approach; frame: AnimationFrame; mode?: TraceMode }) {
   const [copied, setCopied] = useState(false);
   const [practice, setPractice] = useState(false);
   const [draft, setDraft] = useState(approach.cpp);
   const isConceptual = mode === "conceptual";
   const compact = useMemo(() => getLogicView(problemName, approach, frame, mode), [problemName, approach, frame, mode]);
+  const liveComment = useMemo(() => (isConceptual ? null : buildLiveExampleComment(frame)), [frame, isConceptual]);
+
   useEffect(() => { setDraft(approach.cpp); setPractice(false); }, [approach]);
   useEffect(() => { if (isConceptual) setPractice(false); }, [isConceptual]);
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(practice ? draft : compact.lines.map((line) => line.text).join("\n"));
@@ -131,6 +170,7 @@ export function LogicPanel({ problemName, approach, frame, mode = "execution" }:
       window.setTimeout(() => setCopied(false), 1500);
     } catch { setCopied(false); }
   }
+
   return <section className="logic-panel" aria-label="Current algorithm logic">
     <div className="logic-header">
       <span>{approach.type} · {isConceptual ? "No line mapping" : problemName === "Merge Sorted Arrays" ? "pseudocode" : "C++ logic"}</span>
@@ -143,17 +183,25 @@ export function LogicPanel({ problemName, approach, frame, mode = "execution" }:
       <p className="practice-note">Private scratchpad · edits stay in this browser view.</p>
       <textarea className="logic-practice" value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} aria-label="Practice editing the selected solution" />
     </> : <div className="logic-lines" role="list" aria-label="Algorithm lines">
-      {compact.lines.map((line, index) => (
-        <div
-          key={`${line.sourceLine ?? index}-${line.text}`}
-          role="listitem"
-          className={`logic-line${!isConceptual && compact.active === index + 1 ? " active" : ""}`}
-          aria-current={!isConceptual && compact.active === index + 1 ? "step" : undefined}
-        >
-          <span className="logic-line-number">{line.sourceLine ?? index + 1}</span>
-          <code className="hljs" dangerouslySetInnerHTML={{ __html: highlightCppLine(line.text) }} />
-        </div>
-      ))}
+      {compact.lines.map((line, index) => {
+        const isActive = !isConceptual && compact.active === index + 1;
+        return (
+          <div
+            key={`${line.sourceLine ?? index}-${line.text}`}
+            role="listitem"
+            className={`logic-line${isActive ? " active" : ""}`}
+            aria-current={isActive ? "step" : undefined}
+          >
+            <span className="logic-line-number">{line.sourceLine ?? index + 1}</span>
+            <code className="hljs">
+              <span dangerouslySetInnerHTML={{ __html: highlightCppLine(line.text) }} />
+              {isActive && liveComment && (
+                <span className="live-inline-example"> // {liveComment}</span>
+              )}
+            </code>
+          </div>
+        );
+      })}
     </div>}
     {isConceptual ? <p className="logic-disclaimer">Conceptual walkthrough — this trace explains the strategy and does not map the selected approach’s source lines.</p> : compact.active !== undefined && <p className="logic-active-note">Highlighted line explains the current animation step.</p>}
     {!compact.lines.length && <p className="logic-empty">See the full solution below the animation.</p>}

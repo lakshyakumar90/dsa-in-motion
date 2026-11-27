@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, Copy, WrapText } from "lucide-react";
+import { Check, Copy, MessageSquareText, WrapText } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import cpp from "highlight.js/lib/languages/cpp";
 import javascript from "highlight.js/lib/languages/javascript";
@@ -17,28 +17,80 @@ const languages: { id: Language; label: string; className: string }[] = [
   { id: "python", label: "Python", className: "language-python hljs" },
 ];
 
-export function CodeViewer({ approach, activeLines }: { approach: Approach; activeLines?: Partial<Record<Language, number>> }) {
+/** Attach helpful inline teaching comments with concrete dry-run hints to key
+ * code lines that do not already have a comment. */
+function annotateCodeLine(line: string, lang: Language, exampleText?: string): string {
+  const trimmed = line.trim();
+  const commentPrefix = lang === "python" ? "#" : "//";
+  if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("#") || trimmed.startsWith("/*") || trimmed.startsWith("*")) {
+    return line;
+  }
+  if (line.includes("//") || (lang === "python" && line.includes("#"))) {
+    return line;
+  }
+  if (/^\s*return\b/.test(line)) {
+    const ex = exampleText ? ` e.g. ${exampleText.slice(0, 48)}` : " return final computed answer";
+    return `${line}  ${commentPrefix}${ex}`;
+  }
+  if (/^\s*(?:while|for)\s*[\(\s]/.test(line)) {
+    return `${line}  ${commentPrefix} iterate through elements / active range`;
+  }
+  if (/\bswap\s*\(/.test(line)) {
+    return `${line}  ${commentPrefix} swap in-place (e.g. [a, b] -> [b, a])`;
+  }
+  if (/\bsort\s*\(/.test(line) || /\.sort\s*\(/.test(line)) {
+    return `${line}  ${commentPrefix} sort ascending (e.g. [3,1,2] -> [1,2,3])`;
+  }
+  if (/mid\s*=/.test(line)) {
+    return `${line}  ${commentPrefix} midpoint index (e.g. lo=0, hi=4 -> mid=2)`;
+  }
+  if (/^\s*if\s*[\(\s]/.test(line) && !trimmed.endsWith(";")) {
+    return `${line}  ${commentPrefix} check condition for current state`;
+  }
+  return line;
+}
+
+export function CodeViewer({
+  approach,
+  activeLines,
+  example,
+}: {
+  approach: Approach;
+  activeLines?: Partial<Record<Language, number>>;
+  example?: string;
+}) {
   const [language, setLanguage] = useState<Language>("cpp");
   const [wrap, setWrap] = useState(false);
+  const [showExamples, setShowExamples] = useState(true);
   const [copied, setCopied] = useState(false);
-  const source = approach[language];
-  const lineCount = source.split("\n").length;
+
+  const exampleText = approach.example || example;
+  const rawSource = approach[language];
+  const displaySource = useMemo(() => {
+    if (!showExamples) return rawSource;
+    return rawSource
+      .split("\n")
+      .map((line) => annotateCodeLine(line, language, exampleText))
+      .join("\n");
+  }, [rawSource, showExamples, language, exampleText]);
+
+  const lineCount = displaySource.split("\n").length;
 
   const highlightedLines = useMemo(
     () =>
-      source.split("\n").map((line) => {
+      displaySource.split("\n").map((line) => {
         try {
           return hljs.highlight(line || " ", { language: language === "js" ? "javascript" : language }).value;
         } catch {
           return line || " ";
         }
       }),
-    [source, language]
+    [displaySource, language]
   );
 
   async function copyCode() {
     try {
-      await navigator.clipboard.writeText(source);
+      await navigator.clipboard.writeText(rawSource);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -64,6 +116,14 @@ export function CodeViewer({ approach, activeLines }: { approach: Approach; acti
           ))}
         </div>
         <div className="code-actions">
+          <Button
+            size="sm"
+            variant={showExamples ? "subtle" : "ghost"}
+            aria-pressed={showExamples}
+            onClick={() => setShowExamples((value) => !value)}
+          >
+            <MessageSquareText size={14} /> Examples
+          </Button>
           <Button size="sm" variant="ghost" aria-pressed={wrap} onClick={() => setWrap((value) => !value)}>
             <WrapText size={15} /> Wrap
           </Button>
@@ -73,9 +133,17 @@ export function CodeViewer({ approach, activeLines }: { approach: Approach; acti
           </Button>
         </div>
       </div>
+
+      {showExamples && exampleText && (
+        <div className="code-example-banner">
+          <span>WORKED EXAMPLE</span>
+          <code>{exampleText}</code>
+        </div>
+      )}
+
       <div className="code-filebar">
         <span>solution.{language === "cpp" ? "cpp" : language === "js" ? "js" : "py"}</span>
-        <span>{lineCount} lines</span>
+        <span>{lineCount} lines · {approach.time} time · {approach.space} space</span>
       </div>
       <div className={`code-scroll ${wrap ? "wrap" : ""}`}>
         <pre className="code-gutter" aria-hidden="true">

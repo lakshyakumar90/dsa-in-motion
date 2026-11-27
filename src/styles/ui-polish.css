@@ -750,3 +750,147 @@ body {
     height: 96px !important;
   }
 }
+
+/* ==========================================================================
+   Persistent Top Input Context Bar & Inline Worked-Example Annotations
+   ========================================================================== */
+.visual-canvas-box {
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+}
+
+.visual-canvas-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+.input-context-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #2a2932;
+  border-radius: 9px;
+  background: #16161c;
+  flex: 0 0 auto;
+}
+
+.input-context-label {
+  color: #9e9992;
+  font: 700 11px/1.2 var(--font-sans);
+  letter-spacing: 0.08em;
+}
+
+.input-context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.input-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid #302f3a;
+  border-radius: 7px;
+  background: #1c1c24;
+  font-size: 12px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.input-context-chip.is-active {
+  border-color: color-mix(in srgb, var(--primary) 75%, transparent);
+  background: color-mix(in srgb, var(--primary) 16%, #1c1c24);
+}
+
+.input-chip-order {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b8b3ac;
+  font: 700 10.5px ui-monospace, monospace;
+}
+
+.input-context-chip.is-active .input-chip-order {
+  background: var(--primary);
+  color: #14100a;
+}
+
+.input-chip-key {
+  color: #7dd3fc;
+  font: 600 12px ui-monospace, monospace;
+}
+
+.input-chip-eq {
+  color: #7d7973;
+  font: 600 12px ui-monospace, monospace;
+}
+
+.input-chip-val {
+  color: #f3f0eb;
+  font: 600 12px ui-monospace, monospace;
+}
+
+.input-chip-active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+}
+
+/* Live worked-example inline comment in LogicPanel */
+.live-inline-example {
+  margin-left: 8px;
+  color: #86efac;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Worked Example Banner in CodeViewer */
+.code-example-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #252b37;
+  background: rgba(122, 162, 247, 0.08);
+}
+
+.code-example-banner span {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(122, 162, 247, 0.18);
+  color: #93c5fd;
+  font: 700 11px var(--font-sans);
+  letter-spacing: 0.06em;
+}
+
+.code-example-banner code {
+  color: #e6edf3;
+  font: 500 13px/1.5 "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root[data-theme="light"] .code-example-banner {
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+:root[data-theme="light"] .code-example-banner span {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+:root[data-theme="light"] .code-example-banner code {
+  color: #1e293b;
+}
