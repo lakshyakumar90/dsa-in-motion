@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Lightbulb } from "lucide-react";
-import { AnimationPlayer } from "@/components/visualizer/AnimationPlayer";
+import { AnimationPlayer } from "@/features/visualizer/AnimationPlayer";
 import { curriculum, loadSolution, problems, topics } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import type { Approach, Solution } from "@/types/problem";

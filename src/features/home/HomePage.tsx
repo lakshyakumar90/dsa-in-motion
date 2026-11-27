@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Code2, Layers3, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { topics, curriculum } from "@/lib/data";
-import { ConceptLab } from "@/components/visualizer/ConceptLab";
+import { ConceptLab } from "@/features/visualizer/ConceptLab";
 import { Button } from "@/components/ui/button";
 
 const featuredModels = ["water", "binary", "tree", "linked", "dp", "graph"];

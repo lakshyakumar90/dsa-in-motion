@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useState } from "react";
 import { Pause, Play, RotateCcw, StepBack, StepForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GraphVisualizer } from "@/components/visualizer/GraphVisualizer";
-import { ArrayVisualizer } from "@/components/visualizer/ArrayVisualizer";
-import { AnimatedHeight } from "@/components/visualizer/AnimatedHeight";
+import { GraphVisualizer } from "./visualizers/GraphVisualizer";
+import { ArrayVisualizer } from "./visualizers/ArrayVisualizer";
+import { AnimatedHeight } from "./AnimatedHeight";
 import { useConceptLab } from "@/hooks/useConceptLab";
 import type { ConceptFrame, LabInput } from "@/types/animation";
 

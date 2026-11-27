@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AnimationPlayer } from "@/components/visualizer/AnimationPlayer";
+import { AnimationPlayer } from "@/features/visualizer/AnimationPlayer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { loadSolution, problems } from "@/lib/data";
 import type { Approach, Solution } from "@/types/problem";

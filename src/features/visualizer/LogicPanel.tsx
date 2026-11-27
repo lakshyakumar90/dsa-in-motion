@@ -43,7 +43,6 @@ function inferActiveSourceLine(executable: LogicLine[], frame: AnimationFrame): 
   }
   if (/initialize|initialise|start with|set (?:the )?(?:pointer|count|index|minimum|maximum|result)/.test(title)) return choose(/^\s*(?:int|long|size_t|auto|bool|vector|std::\w+)\s+\w+\s*(?:=|\()/, /^\s*\w+\s*=/);
 
-  // Last resort: match meaningful words from the step against code tokens.
   const words = title.match(/[a-z_][a-z_0-9]{2,}/g) ?? [];
   let best: { line: LogicLine; score: number } | undefined;
   for (const line of executable) {
@@ -82,14 +81,17 @@ function mergeLogic(approach: Approach, frame: AnimationFrame): { lines: LogicLi
   return { lines, active };
 }
 
-function sourceExcerpt(approach: Approach, frame: AnimationFrame): { lines: LogicLine[]; active?: number } {
+function sourceExcerpt(approach: Approach, frame: AnimationFrame, mapLine: boolean): { lines: LogicLine[]; active?: number } {
   const source = approach.cpp.split("\n");
   const executable = source.map((text, index) => ({ text, sourceLine: index + 1 })).filter(({ text }) => isExecutableLine(text));
-  const activeSourceLine = activeSourceLineForExcerpt(executable, approach, frame);
-  const activeIndex = executable.findIndex((line) => line.sourceLine === activeSourceLine);
+  if (!mapLine) {
+    return { lines: executable.slice(0, 7), active: undefined };
+  }
+  const activeSourceLineValue = activeSourceLineForExcerpt(executable, approach, frame);
+  const activeIndex = executable.findIndex((line) => line.sourceLine === activeSourceLineValue);
   const start = activeIndex < 0 ? 0 : Math.max(0, Math.min(activeIndex - 2, executable.length - 7));
   const lines = executable.slice(start, start + 7);
-  const visibleActive = lines.findIndex((line) => line.sourceLine === activeSourceLine);
+  const visibleActive = lines.findIndex((line) => line.sourceLine === activeSourceLineValue);
   return { lines, active: visibleActive < 0 ? undefined : visibleActive + 1 };
 }
 
@@ -98,19 +100,21 @@ function activeSourceLineForExcerpt(executable: LogicLine[], approach: Approach,
   return resolved && executable.some((line) => line.sourceLine === resolved) ? resolved : undefined;
 }
 
-export function getLogicView(problemName: string, approach: Approach, frame: AnimationFrame) {
-  if (problemName !== "Merge Sorted Arrays") return sourceExcerpt(approach, frame);
+export function getLogicView(problemName: string, approach: Approach, frame: AnimationFrame, mode: TraceMode = "execution") {
+  if (mode === "conceptual") return sourceExcerpt(approach, frame, false);
+  if (problemName !== "Merge Sorted Arrays") return sourceExcerpt(approach, frame, true);
   const mergedLogic = mergeLogic(approach, frame);
-  return mergedLogic.active === undefined ? sourceExcerpt(approach, frame) : mergedLogic;
+  return mergedLogic.active === undefined ? sourceExcerpt(approach, frame, true) : mergedLogic;
 }
 
 export function LogicPanel({ problemName, approach, frame, mode = "execution" }: { problemName: string; approach: Approach; frame: AnimationFrame; mode?: TraceMode }) {
   const [copied, setCopied] = useState(false);
   const [practice, setPractice] = useState(false);
   const [draft, setDraft] = useState(approach.cpp);
-  const compact = useMemo(() => getLogicView(problemName, approach, frame), [problemName, approach, frame]);
+  const isConceptual = mode === "conceptual";
+  const compact = useMemo(() => getLogicView(problemName, approach, frame, mode), [problemName, approach, frame, mode]);
   useEffect(() => { setDraft(approach.cpp); setPractice(false); }, [approach]);
-  useEffect(() => { if (mode === "conceptual") setPractice(false); }, [mode]);
+  useEffect(() => { if (isConceptual) setPractice(false); }, [isConceptual]);
   async function copy() {
     try {
       await navigator.clipboard.writeText(practice ? draft : compact.lines.map((line) => line.text).join("\n"));
@@ -119,9 +123,20 @@ export function LogicPanel({ problemName, approach, frame, mode = "execution" }:
     } catch { setCopied(false); }
   }
   return <section className="logic-panel" aria-label="Current algorithm logic">
-    <div className="logic-header"><span>{approach.type} · {problemName === "Merge Sorted Arrays" ? "pseudocode" : "C++ logic"}</span><div className="logic-actions">{mode === "execution" && <button type="button" onClick={() => setPractice((value) => !value)} aria-pressed={practice} aria-label={practice ? "Close practice editor" : "Practice editing this solution"}>{practice ? <X size={13} /> : <PencilLine size={13} />}{practice ? "Close" : "Practice"}</button>}<button type="button" onClick={() => void copy()} aria-label="Copy displayed logic">{copied ? <Check size={13} /> : <Copy size={13} />}{copied ? "Copied" : "Copy"}</button></div></div>
-    {practice ? <><p className="practice-note">Private scratchpad · edits stay in this browser view.</p><textarea className="logic-practice" value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} aria-label="Practice editing the selected solution" /></> : <div className="logic-lines" role="list" aria-label="Algorithm lines">{compact.lines.map((line, index) => <div key={`${line.sourceLine ?? index}-${line.text}`} role="listitem" className={`logic-line${compact.active === index + 1 ? " active" : ""}`} aria-current={compact.active === index + 1 ? "step" : undefined}><span className="logic-line-number">{line.sourceLine ?? index + 1}</span><code>{line.text}</code></div>)}</div>}
-    {compact.active !== undefined && <p className="logic-active-note">Highlighted line explains the current animation step.</p>}
+    <div className="logic-header">
+      <span>{approach.type} · {isConceptual ? "No line mapping" : problemName === "Merge Sorted Arrays" ? "pseudocode" : "C++ logic"}</span>
+      <div className="logic-actions">
+        {!isConceptual && <button type="button" onClick={() => setPractice((value) => !value)} aria-pressed={practice} aria-label={practice ? "Close practice editor" : "Practice editing this solution"}>{practice ? <X size={13} /> : <PencilLine size={13} />}{practice ? "Close" : "Practice"}</button>}
+        <button type="button" onClick={() => void copy()} aria-label="Copy displayed logic">{copied ? <Check size={13} /> : <Copy size={13} />}{copied ? "Copied" : "Copy"}</button>
+      </div>
+    </div>
+    {practice ? <>
+      <p className="practice-note">Private scratchpad · edits stay in this browser view.</p>
+      <textarea className="logic-practice" value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} aria-label="Practice editing the selected solution" />
+    </> : <div className="logic-lines" role="list" aria-label="Algorithm lines">
+      {compact.lines.map((line, index) => <div key={`${line.sourceLine ?? index}-${line.text}`} role="listitem" className={`logic-line${!isConceptual && compact.active === index + 1 ? " active" : ""}`} aria-current={!isConceptual && compact.active === index + 1 ? "step" : undefined}><span className="logic-line-number">{line.sourceLine ?? index + 1}</span><code>{line.text}</code></div>)}
+    </div>}
+    {isConceptual ? <p className="logic-disclaimer">Conceptual walkthrough — this trace explains the strategy and does not map the selected approach’s source lines.</p> : compact.active !== undefined && <p className="logic-active-note">Highlighted line explains the current animation step.</p>}
     {!compact.lines.length && <p className="logic-empty">See the full solution below the animation.</p>}
   </section>;
 }

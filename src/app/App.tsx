@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
-import { HomePage } from "@/components/pages/HomePage";
-import { PlaygroundPage } from "@/components/pages/PlaygroundPage";
-import { ProblemPage } from "@/components/pages/ProblemPage";
-import { QuestionsPage } from "@/components/pages/QuestionsPage";
-import { TopicPage } from "@/components/pages/TopicPage";
+import { HomePage } from "@/features/home/HomePage";
+import { PlaygroundPage } from "@/features/playground/PlaygroundPage";
+import { ProblemPage } from "@/features/problems/ProblemPage";
+import { QuestionsPage } from "@/features/questions/QuestionsPage";
+import { TopicPage } from "@/features/topics/TopicPage";
 import { ThemeProvider } from "@/app/providers/ThemeProvider";
 
 interface RouteState { name: "home" | "questions" | "lab" | "topic" | "question" | "not-found"; value?: string }
